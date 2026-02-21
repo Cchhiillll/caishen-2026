@@ -1000,6 +1000,31 @@
       dropEl.addEventListener("animationend", () => dropEl.remove(), { once: true });
     }
 
+    function pickDropAtPoint(x, y) {
+      const candidates = typeof document.elementsFromPoint === "function"
+        ? document.elementsFromPoint(x, y)
+        : [document.elementFromPoint(x, y)];
+      for (const el of candidates) {
+        if (!el || !el.classList) continue;
+        if (el.classList.contains("hongbao-drop") || el.classList.contains("yuanbao-drop")) {
+          return el;
+        }
+      }
+      return null;
+    }
+
+    function collectByTouchPoints(touches) {
+      const touched = new Set();
+      for (const touch of touches) {
+        const el = pickDropAtPoint(touch.clientX, touch.clientY);
+        if (!el || touched.has(el)) continue;
+        touched.add(el);
+        const kind = el.classList.contains("yuanbao-drop") ? "yuanbao" : "hongbao";
+        collectDrop(el, kind, { clientX: touch.clientX, clientY: touch.clientY });
+      }
+      return touched.size > 0;
+    }
+
     function clearStory() {
       phases.forEach((name) => body.classList.remove(name));
       while (timers.length) {
@@ -1034,6 +1059,7 @@
       packet.style.setProperty("--r0", `${-50 + Math.floor(Math.random() * 100)}deg`);
       packet.style.setProperty("--r1", `${-500 + Math.floor(Math.random() * 1000)}deg`);
       packet.addEventListener("pointerdown", (event) => {
+        if (event.pointerType === "touch") return;
         event.preventDefault();
         collectDrop(packet, "hongbao", event);
       });
@@ -1053,6 +1079,7 @@
       ingot.style.setProperty("--r0", `${-26 + Math.floor(Math.random() * 52)}deg`);
       ingot.style.setProperty("--r1", `${-240 + Math.floor(Math.random() * 480)}deg`);
       ingot.addEventListener("pointerdown", (event) => {
+        if (event.pointerType === "touch") return;
         event.preventDefault();
         collectDrop(ingot, "yuanbao", event);
       });
@@ -1328,6 +1355,12 @@
     ["contextmenu", "dragstart"].forEach((eventName) => {
       document.addEventListener(eventName, (event) => event.preventDefault());
     });
+    document.addEventListener("touchstart", (event) => {
+      if (!event.changedTouches || event.changedTouches.length === 0) return;
+      if (collectByTouchPoints(event.changedTouches)) {
+        event.preventDefault();
+      }
+    }, { passive: false, capture: true });
     document.addEventListener("selectstart", (event) => {
       const target = event.target;
       if (target && target.closest && target.closest("input, textarea")) return;
