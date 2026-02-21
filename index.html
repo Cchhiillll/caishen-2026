@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>财神来敲门 🧧</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Microsoft YaHei', sans-serif;
+            overflow: hidden;
+        }
+        
+        .scene {
+            position: relative;
+            width: 100%;
+            height: 80vh;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        
+        .house {
+            position: relative;
+            width: 300px;
+            height: 250px;
+        }
+        
+        .house-body {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 150px;
+            background: linear-gradient(135deg, #8B4513, #A0522D);
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .door {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 120px;
+            background: linear-gradient(180deg, #654321, #8B4513);
+            border-radius: 5px 5px 0 0;
+            border: 3px solid #FFD700;
+            transition: transform 0.5s ease;
+            transform-origin: left;
+        }
+        
+        .door.open {
+            transform: translateX(-50%) rotateY(-80deg);
+        }
+        
+        .door-knob {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            width: 15px;
+            height: 15px;
+            background: #FFD700;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #FFD700;
+        }
+        
+        .roof {
+            position: absolute;
+            bottom: 140px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 120px solid transparent;
+            border-right: 120px solid transparent;
+            border-bottom: 80px solid #DC143C;
+        }
+        
+        .roof::after {
+            content: '🏮';
+            position: absolute;
+            top: 30px;
+            left: -20px;
+            font-size: 40px;
+        }
+        
+        .caishen {
+            position: absolute;
+            font-size: 80px;
+            bottom: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 5;
+        }
+        
+        .caishen.come {
+            bottom: 80px;
+            animation: shake 0.5s ease-in-out infinite;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(-50%) rotate(0deg); }
+            25% { transform: translateX(-50%) rotate(-5deg); }
+            75% { transform: translateX(-50%) rotate(5deg); }
+        }
+        
+        .caishen.knock {
+            animation: knock 0.3s ease-in-out 3;
+        }
+        
+        @keyframes knock {
+            0%, 100% { transform: translateX(-50%) translateX(0); }
+            50% { transform: translateX(-50%) translateX(20px); }
+        }
+        
+        .caishen.enter {
+            bottom: 50px;
+            left: 30%;
+        }
+        
+        .money {
+            position: absolute;
+            font-size: 40px;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+        
+        .money.show {
+            opacity: 1;
+            animation: scatter 1s ease-out forwards;
+        }
+        
+        @keyframes scatter {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            50% { transform: translateY(-50px) scale(1.2); opacity: 1; }
+            100% { transform: translateY(-100px) scale(1); opacity: 0; }
+        }
+        
+        .message {
+            position: absolute;
+            top: 20%;
+            font-size: 2rem;
+            color: #FFD700;
+            text-shadow: 0 0 20px #FFD700;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .message.show {
+            opacity: 1;
+        }
+        
+        .start-btn {
+            position: absolute;
+            bottom: 10%;
+            padding: 15px 50px;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #8B0000;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 5px 20px rgba(255,215,0,0.5);
+            transition: transform 0.3s ease;
+        }
+        
+        .start-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .start-btn.hidden {
+            display: none;
+        }
+        
+        .steps {
+            position: absolute;
+            bottom: 5%;
+            color: rgba(255,255,255,0.6);
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="message" id="message">财神来啦！🚪</div>
+    
+    <div class="scene">
+        <div class="house">
+            <div class="roof"></div>
+            <div class="house-body"></div>
+            <div class="door" id="door">
+                <div class="door-knob"></div>
+            </div>
+        </div>
+        
+        <div class="caishen" id="caishen">🧧</div>
+        
+        <div class="money" id="money1" style="left: 20%; top: 40%;">💵</div>
+        <div class="money" id="money2" style="left: 50%; top: 35%;">💴</div>
+        <div class="money" id="money3" style="left: 70%; top: 45%;">💰</div>
+        <div class="money" id="money4" style="left: 35%; top: 30%;">💎</div>
+        <div class="money" id="money5" style="left: 60%; top: 25%;">🪙</div>
+    </div>
+    
+    <button class="start-btn" id="startBtn" onclick="startAnimation()">🎊 开门迎财神</button>
+    <div class="steps" id="steps">点击按钮开始</div>
+    
+    <script>
+        const caishen = document.getElementById('caishen');
+        const door = document.getElementById('door');
+        const message = document.getElementById('message');
+        const startBtn = document.getElementById('startBtn');
+        const steps = document.getElementById('steps');
+        const moneyElements = ['money1', 'money2', 'money3', 'money4', 'money5'];
+        
+        function startAnimation() {
+            startBtn.classList.add('hidden');
+            steps.textContent = '财神正在走来...';
+            
+            // 1. 财神出现
+            setTimeout(() => {
+                caishen.classList.add('come');
+            }, 500);
+            
+            // 2. 敲门
+            setTimeout(() => {
+                caishen.classList.add('knock');
+                message.textContent = '咚！咚！咚！';
+                message.classList.add('show');
+                steps.textContent = '财神敲门中...';
+            }, 2000);
+            
+            // 3. 门打开
+            setTimeout(() => {
+                door.classList.add('open');
+                caishen.classList.remove('knock');
+                message.textContent = '门开啦！';
+                steps.textContent = '财神进门中...';
+            }, 3500);
+            
+            // 4. 财神进来
+            setTimeout(() => {
+                caishen.classList.add('enter');
+                message.textContent = '🎉 财神进屋啦！';
+                steps.textContent = '发钱中...';
+            }, 4500);
+            
+            // 5. 撒钱
+            setTimeout(() => {
+                moneyElements.forEach((id, i) => {
+                    setTimeout(() => {
+                        document.getElementById(id).classList.add('show');
+                    }, i * 200);
+                });
+                message.textContent = '💰💰💰 恭喜发财！💰💰💰';
+                steps.textContent = '完成！';
+            }, 5500);
+            
+            // 6. 最终效果
+            setTimeout(() => {
+                message.innerHTML = '🧧 祝您新年发大财！ 🧧<br><span style="font-size:1rem">2026正月初五</span>';
+            }, 7000);
+        }
+    </script>
+</body>
+</html>
