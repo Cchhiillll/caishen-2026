@@ -963,6 +963,7 @@
     let hongbaoCount = 0;
     let yuanbaoCount = 0;
     let fortuneTotal = 0;
+    let lastHapticAt = 0;
 
     function updateScoreBoard() {
       const scoreBoard = document.getElementById("scoreBoard");
@@ -977,6 +978,17 @@
       pop.style.top = `${y}px`;
       document.body.appendChild(pop);
       pop.addEventListener("animationend", () => pop.remove(), { once: true });
+    }
+
+    function triggerHaptic(kind) {
+      if (kind !== "hongbao") return;
+      if (!navigator.vibrate) return;
+      const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+      if (now - lastHapticAt < 55) return;
+      lastHapticAt = now;
+      try {
+        navigator.vibrate(18);
+      } catch (_) {}
     }
 
     function collectDrop(dropEl, kind, event) {
@@ -997,6 +1009,7 @@
       const x = event && typeof event.clientX === "number" ? event.clientX : window.innerWidth / 2;
       const y = event && typeof event.clientY === "number" ? event.clientY : window.innerHeight / 2;
       showScorePop(x, y, `+${added}`, kind);
+      triggerHaptic(kind);
       dropEl.addEventListener("animationend", () => dropEl.remove(), { once: true });
     }
 
