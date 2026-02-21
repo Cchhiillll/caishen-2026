@@ -361,32 +361,14 @@
 
     .cat-stage {
       width: 100%;
-      position: relative;
       filter: drop-shadow(0 14px 20px #00000066);
     }
 
-    .cat-stage canvas,
     .cat-stage img {
       width: 100%;
       height: auto;
       display: block;
       animation: breathe 2.8s ease-in-out infinite;
-    }
-
-    .cat-stage img {
-      opacity: 0;
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-    }
-
-    .cat-stage.fallback img {
-      opacity: 1;
-      position: static;
-    }
-
-    .cat-stage.fallback canvas {
-      display: none;
     }
 
     body.phase-enter .cat-caishen,
@@ -767,9 +749,8 @@
     <p class="knock-line">咚咚咚，猫猫财神到</p>
 
     <figure class="cat-caishen">
-      <div class="cat-stage" id="catStage">
-        <canvas id="catCanvas" aria-label="去背景后的猫财神"></canvas>
-        <img id="catSource" src="assets/cat-caishen.png" alt="两只猫财神图" />
+      <div class="cat-stage">
+        <img src="assets/cat-caishen.png" alt="两只猫财神图" />
       </div>
       <figcaption class="cat-caption">两位财神猫进门送福</figcaption>
     </figure>
@@ -800,9 +781,6 @@
     const musicBtn = document.getElementById("musicBtn");
     const hongbaoRain = document.getElementById("hongbaoRain");
     const yuanbaoRain = document.getElementById("yuanbaoRain");
-    const catStage = document.getElementById("catStage");
-    const catCanvas = document.getElementById("catCanvas");
-    const catSource = document.getElementById("catSource");
     const bgm = document.getElementById("bgm");
     const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent)
       || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
@@ -814,141 +792,6 @@
     let hongbaoTimer = null;
     let yuanbaoTimer = null;
     let startedMutedAutoplay = false;
-
-    function removeCatBackground() {
-      try {
-        const w = catSource.naturalWidth;
-        const h = catSource.naturalHeight;
-        if (!w || !h) {
-          catStage.classList.add("fallback");
-          return;
-        }
-
-        const workCanvas = document.createElement("canvas");
-        workCanvas.width = w;
-        workCanvas.height = h;
-        const workCtx = workCanvas.getContext("2d", { willReadFrequently: true });
-        workCtx.drawImage(catSource, 0, 0, w, h);
-
-        const imageData = workCtx.getImageData(0, 0, w, h);
-        const data = imageData.data;
-        const total = w * h;
-
-        const visited = new Uint8Array(total);
-        const bg = new Uint8Array(total);
-        const queue = new Int32Array(total);
-        let qHead = 0;
-        let qTail = 0;
-
-        const lum = (i4) => (0.2126 * data[i4]) + (0.7152 * data[i4 + 1]) + (0.0722 * data[i4 + 2]);
-
-        function isBgSeed(i4) {
-          const r = data[i4];
-          const g = data[i4 + 1];
-          const b = data[i4 + 2];
-          const a = data[i4 + 3];
-          if (a < 12) return true;
-
-          const max = Math.max(r, g, b);
-          const min = Math.min(r, g, b);
-          const sat = max === 0 ? 0 : (max - min) / max;
-          const l = lum(i4);
-          const warmDark = r > g && g >= b && (r - b) < 145;
-
-          return l < 72 || (l < 156 && warmDark) || (l < 174 && sat < 0.24);
-        }
-
-        function canSpread(fromIdx, toIdx) {
-          const f = fromIdx * 4;
-          const t = toIdx * 4;
-
-          const dr = data[f] - data[t];
-          const dg = data[f + 1] - data[t + 1];
-          const db = data[f + 2] - data[t + 2];
-          const colorDist = Math.hypot(dr, dg, db);
-          const lf = lum(f);
-          const lt = lum(t);
-
-          return colorDist < 31
-            || (Math.abs(lf - lt) < 18 && colorDist < 50)
-            || (lt < 118 && colorDist < 64)
-            || isBgSeed(t);
-        }
-
-        function seedAt(index) {
-          if (visited[index]) return;
-          visited[index] = 1;
-          const i4 = index * 4;
-          if (isBgSeed(i4)) {
-            bg[index] = 1;
-            queue[qTail++] = index;
-          }
-        }
-
-        for (let x = 0; x < w; x += 1) {
-          seedAt(x);
-          seedAt((h - 1) * w + x);
-        }
-        for (let y = 0; y < h; y += 1) {
-          seedAt(y * w);
-          seedAt(y * w + (w - 1));
-        }
-
-        while (qHead < qTail) {
-          const idx = queue[qHead++];
-          const x = idx % w;
-          const y = (idx / w) | 0;
-          const neighbors = [];
-          if (x > 0) neighbors.push(idx - 1);
-          if (x < w - 1) neighbors.push(idx + 1);
-          if (y > 0) neighbors.push(idx - w);
-          if (y < h - 1) neighbors.push(idx + w);
-
-          for (const next of neighbors) {
-            if (visited[next]) continue;
-            visited[next] = 1;
-            if (canSpread(idx, next)) {
-              bg[next] = 1;
-              queue[qTail++] = next;
-            }
-          }
-        }
-
-        for (let i = 0; i < total; i += 1) {
-          const i4 = i * 4;
-          if (bg[i]) {
-            data[i4 + 3] = 0;
-            continue;
-          }
-
-          const x = i % w;
-          const y = (i / w) | 0;
-          let nearBg = 0;
-          for (let yy = -1; yy <= 1; yy += 1) {
-            const ny = y + yy;
-            if (ny < 0 || ny >= h) continue;
-            for (let xx = -1; xx <= 1; xx += 1) {
-              const nx = x + xx;
-              if (nx < 0 || nx >= w || (xx === 0 && yy === 0)) continue;
-              if (bg[ny * w + nx]) nearBg += 1;
-            }
-          }
-
-          if (nearBg > 0) {
-            const soften = Math.max(0.34, 1 - nearBg * 0.09);
-            data[i4 + 3] = Math.round(data[i4 + 3] * soften);
-          }
-        }
-
-        catCanvas.width = w;
-        catCanvas.height = h;
-        const outCtx = catCanvas.getContext("2d");
-        outCtx.putImageData(imageData, 0, 0);
-        catStage.classList.remove("fallback");
-      } catch (_) {
-        catStage.classList.add("fallback");
-      }
-    }
 
     function clearStory() {
       phases.forEach((name) => body.classList.remove(name));
@@ -1259,10 +1102,6 @@
     });
 
     musicBtn.addEventListener("click", toggleMusic);
-
-    catSource.addEventListener("load", removeCatBackground);
-    catSource.addEventListener("error", () => catStage.classList.add("fallback"));
-    if (catSource.complete) removeCatBackground();
 
     updateMusicBtn();
     playStory();
