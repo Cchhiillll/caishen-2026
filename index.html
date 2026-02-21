@@ -527,49 +527,6 @@
       align-items: center;
     }
 
-    .music-wrap {
-      position: relative;
-      display: inline-flex;
-    }
-
-    .finger-hint {
-      position: absolute;
-      right: calc(100% + 8px);
-      top: -6px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      pointer-events: none;
-      opacity: 0;
-      transform: translateY(4px);
-      transition: 260ms ease;
-      filter: drop-shadow(0 4px 8px #00000066);
-    }
-
-    body.need-music .finger-hint {
-      opacity: 1;
-      transform: translateY(0);
-      animation: finger-float 1.05s ease-in-out infinite;
-    }
-
-    .finger-hint::before {
-      content: "点这里";
-      white-space: nowrap;
-      font-size: 0.85rem;
-      color: #ffeab3;
-      background: #4b1320e0;
-      border: 1px solid #ffda7a;
-      border-radius: 999px;
-      padding: 3px 7px;
-    }
-
-    .finger-hint::after {
-      content: "☝";
-      font-size: 1.35rem;
-      line-height: 1;
-      animation: finger-tap 0.95s ease-in-out infinite;
-    }
-
     .btn {
       border: 2px solid #ffde82;
       border-radius: 12px;
@@ -644,16 +601,6 @@
     @keyframes breathe {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-4px); }
-    }
-
-    @keyframes finger-float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-3px); }
-    }
-
-    @keyframes finger-tap {
-      0%, 100% { transform: translateX(0) scale(1); }
-      50% { transform: translateX(4px) scale(0.94); }
     }
 
     @media (max-width: 960px) {
@@ -756,17 +703,6 @@
         transform: translateX(-50%);
       }
 
-      .finger-hint {
-        right: auto;
-        left: 50%;
-        top: -36px;
-        transform: translate(-50%, 4px);
-      }
-
-      body.need-music .finger-hint {
-        transform: translate(-50%, 0);
-      }
-
       .wish {
         bottom: 14%;
         font-size: clamp(1.05rem, 5.2vw, 1.35rem);
@@ -831,10 +767,7 @@
     <p class="music-hint">已自动播放，iPhone 轻触页面可立即开声</p>
 
     <div class="controls">
-      <div class="music-wrap">
-        <span class="finger-hint" aria-hidden="true"></span>
-        <button class="btn" id="musicBtn" type="button">关闭音乐</button>
-      </div>
+      <button class="btn" id="musicBtn" type="button">关闭音乐</button>
       <button class="btn" id="replayBtn" type="button">再迎一次</button>
     </div>
   </main>
@@ -1158,7 +1091,6 @@
       if (!musicAvailable) {
         musicBtn.disabled = true;
         musicBtn.textContent = "音乐不可用";
-        body.classList.remove("need-music");
         return;
       }
       if (bgm.paused) {
@@ -1168,7 +1100,6 @@
       } else {
         musicBtn.textContent = "关闭音乐";
       }
-      body.classList.toggle("need-music", bgm.paused || bgm.muted);
     }
 
     async function tryPlayMusic() {
