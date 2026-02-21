@@ -473,6 +473,17 @@
       text-shadow: 0 0 8px #00000066;
     }
 
+    .hongbao-drop.drop-tier-large {
+      border-width: 3px;
+      box-shadow: 0 12px 18px #00000049;
+      filter: saturate(1.06) brightness(1.04);
+    }
+
+    .hongbao-drop.drop-tier-small {
+      border-width: 1px;
+      filter: saturate(0.95) brightness(0.96);
+    }
+
     .yuanbao-drop {
       position: absolute;
       top: -12%;
@@ -490,6 +501,17 @@
       pointer-events: auto;
       cursor: pointer;
       touch-action: manipulation;
+    }
+
+    .yuanbao-drop.drop-tier-large {
+      border-width: 3px;
+      box-shadow: 0 11px 16px #0000004f;
+      filter: saturate(1.07) brightness(1.06);
+    }
+
+    .yuanbao-drop.drop-tier-small {
+      border-width: 1px;
+      filter: saturate(0.92) brightness(0.95);
     }
 
     .drop-collected {
@@ -1160,12 +1182,12 @@
       <div class="controls">
         <button class="btn" id="replayBtn" type="button">再迎一次</button>
       </div>
-      <p class="countdown-board" id="countdownBoard">抢红包倒计时 30s</p>
+      <p class="countdown-board" id="countdownBoard">抢红包倒计时 15s</p>
     </div>
   </main>
   <section class="share-modal" id="shareModal" aria-hidden="true">
     <div class="share-dialog" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
-      <h2 class="share-title" id="shareTitle">30秒到，财运正旺</h2>
+      <h2 class="share-title" id="shareTitle">15秒到，财运正旺</h2>
       <p class="share-subtitle" id="shareSummary">来生成喜庆分享卡，晒出你的迎财神战绩。</p>
       <div class="share-actions">
         <button class="btn" id="genShareCardBtn" type="button">下载分享卡片</button>
@@ -1205,6 +1227,7 @@
     const hongbaoRain = document.getElementById("hongbaoRain");
     const yuanbaoRain = document.getElementById("yuanbaoRain");
     const shareModal = document.getElementById("shareModal");
+    const shareTitle = document.getElementById("shareTitle");
     const shareSummary = document.getElementById("shareSummary");
     const genShareCardBtn = document.getElementById("genShareCardBtn");
     const closeShareModalBtn = document.getElementById("closeShareModalBtn");
@@ -1228,12 +1251,37 @@
     let yuanbaoCount = 0;
     let fortuneTotal = 0;
     let lastHapticAt = 0;
-    let countdownLeft = 30;
+    const ROUND_SECONDS = 15;
+    let countdownLeft = ROUND_SECONDS;
     let countdownTimer = null;
     let shareReminderShown = false;
     let saveToastTimer = null;
     const SHARE_URL = "https://caishen.wypchill.work";
     const SHARE_QR_URL = `https://api.qrserver.com/v1/create-qr-code/?size=480x480&margin=0&data=${encodeURIComponent(SHARE_URL)}`;
+    const HONGBAO_DROP_TYPES = [
+      { tier: "large", weight: 15, points: 688, width: [36, 52] },
+      { tier: "medium", weight: 20, points: 168, width: [28, 40] },
+      { tier: "small", weight: 30, points: 6, width: [20, 30] }
+    ];
+    const YUANBAO_DROP_TYPES = [
+      { tier: "large", weight: 5, points: 888, width: [40, 56] },
+      { tier: "medium", weight: 15, points: 188, width: [30, 44] },
+      { tier: "small", weight: 25, points: 88, width: [22, 32] }
+    ];
+
+    function randInt(min, max) {
+      return min + Math.floor(Math.random() * (max - min + 1));
+    }
+
+    function pickWeightedType(pool) {
+      const total = pool.reduce((sum, item) => sum + item.weight, 0);
+      let roll = Math.random() * total;
+      for (const item of pool) {
+        roll -= item.weight;
+        if (roll <= 0) return item;
+      }
+      return pool[pool.length - 1];
+    }
 
     function updateScoreBoard() {
       const scoreBoard = document.getElementById("scoreBoard");
@@ -1257,17 +1305,18 @@
     }
 
     function buildShareSummaryText() {
-      return `本轮30秒：红包 ${hongbaoCount} 个，元宝 ${yuanbaoCount} 个，财运值 ${fortuneTotal.toLocaleString("zh-CN")}。`;
+      return `本轮${ROUND_SECONDS}秒：红包 ${hongbaoCount} 个，元宝 ${yuanbaoCount} 个，财运值 ${fortuneTotal.toLocaleString("zh-CN")}。`;
     }
 
     function openShareReminder() {
+      shareTitle.textContent = `${ROUND_SECONDS}秒到，财运正旺`;
       shareSummary.textContent = `${buildShareSummaryText()} 点击下方下载喜庆分享卡。`;
       setShareModalOpen(true);
     }
 
     function startCountdown() {
       if (countdownTimer) return;
-      countdownLeft = 30;
+      countdownLeft = ROUND_SECONDS;
       shareReminderShown = false;
       updateCountdownBoard();
       countdownTimer = setInterval(() => {
@@ -1432,10 +1481,12 @@
       if (!dropEl || dropEl.classList.contains("drop-collected")) return;
       dropEl.classList.add("drop-collected");
 
-      let added = 88;
+      const parsedPoints = Number(dropEl.dataset.points);
+      let added = Number.isFinite(parsedPoints) && parsedPoints > 0
+        ? parsedPoints
+        : (kind === "yuanbao" ? 188 : 88);
       if (kind === "yuanbao") {
         yuanbaoCount += 1;
-        added = 188;
       } else {
         hongbaoCount += 1;
       }
@@ -1482,7 +1533,7 @@
       }
       stopCountdown();
       setShareModalOpen(false);
-      countdownLeft = 30;
+      countdownLeft = ROUND_SECONDS;
       updateCountdownBoard();
       stopRains();
     }
@@ -1504,8 +1555,10 @@
     function spawnHongbaoDrop() {
       if (!rainRunning) return;
       const packet = document.createElement("span");
-      const w = 22 + Math.floor(Math.random() * 22);
-      packet.className = "hongbao-drop";
+      const spec = pickWeightedType(HONGBAO_DROP_TYPES);
+      const w = randInt(spec.width[0], spec.width[1]);
+      packet.className = `hongbao-drop drop-tier-${spec.tier}`;
+      packet.dataset.points = String(spec.points);
       packet.style.setProperty("--x", `${4 + Math.random() * 92}%`);
       packet.style.setProperty("--w", `${w}px`);
       packet.style.setProperty("--dur", `${4100 + Math.floor(Math.random() * 2400)}ms`);
@@ -1524,8 +1577,10 @@
     function spawnYuanbaoDrop() {
       if (!rainRunning) return;
       const ingot = document.createElement("span");
-      const w = 24 + Math.floor(Math.random() * 22);
-      ingot.className = "yuanbao-drop";
+      const spec = pickWeightedType(YUANBAO_DROP_TYPES);
+      const w = randInt(spec.width[0], spec.width[1]);
+      ingot.className = `yuanbao-drop drop-tier-${spec.tier}`;
+      ingot.dataset.points = String(spec.points);
       ingot.style.setProperty("--x", `${6 + Math.random() * 88}%`);
       ingot.style.setProperty("--w", `${w}px`);
       ingot.style.setProperty("--dur", `${4600 + Math.floor(Math.random() * 2600)}ms`);
