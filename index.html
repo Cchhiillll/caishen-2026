@@ -553,6 +553,20 @@
       opacity: 1;
     }
 
+    .credit {
+      position: fixed;
+      left: 50%;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 4px);
+      transform: translateX(-50%);
+      font-size: clamp(0.72rem, 1.7vw, 0.9rem);
+      letter-spacing: 0.04em;
+      color: #ffe7a6cc;
+      text-shadow: 0 0 6px #4a1000a8;
+      z-index: 40;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
     @keyframes door-shake {
       0%, 100% { transform: translateX(0); }
       30% { transform: translateX(-4px); }
@@ -766,6 +780,7 @@
       <button class="btn" id="replayBtn" type="button">再迎一次</button>
     </div>
   </main>
+  <p class="credit">chillwang的AI无限公司出品</p>
 
   <audio id="bgm" preload="auto" loop autoplay playsinline webkit-playsinline x5-playsinline>
     <source src="assets/bafanglaicai.mp3" type="audio/mpeg" />
