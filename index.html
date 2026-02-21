@@ -776,6 +776,30 @@
       font-size: clamp(0.8rem, 2.2vw, 0.92rem);
     }
 
+    .save-toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 26px);
+      transform: translateX(-50%) translateY(10px);
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid #ffd777;
+      background: #3f0f14e6;
+      color: #ffeab4;
+      font-size: clamp(0.86rem, 2.3vw, 1rem);
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 90;
+      transition: 220ms ease;
+      text-shadow: 0 0 8px #4a1000;
+    }
+
+    .save-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
     @keyframes door-shake {
       0%, 100% { transform: translateX(0); }
       30% { transform: translateX(-4px); }
@@ -1081,6 +1105,7 @@
       </article>
     </div>
   </section>
+  <p class="save-toast" id="saveToast" role="status" aria-live="polite"></p>
   <p class="credit">chillwang的AI无限公司出品</p>
 
   <audio id="bgm" preload="auto" loop autoplay playsinline webkit-playsinline x5-playsinline>
@@ -1105,6 +1130,7 @@
     const shareCard = document.getElementById("shareCard");
     const shareCardScore = document.getElementById("shareCardScore");
     const shareCardQr = document.getElementById("shareCardQr");
+    const saveToast = document.getElementById("saveToast");
     const bgm = document.getElementById("bgm");
     const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent)
       || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
@@ -1124,6 +1150,7 @@
     let countdownTimer = null;
     let shareReminderShown = false;
     let shareQrDataUrl = "";
+    let saveToastTimer = null;
     const SHARE_URL = "https://caishen.wypchill.work";
     const SHARE_QR_URL = `https://api.qrserver.com/v1/create-qr-code/?size=480x480&margin=0&data=${encodeURIComponent(SHARE_URL)}`;
 
@@ -1177,6 +1204,15 @@
       shareCardScore.innerHTML = `财运值 <strong>${fortuneTotal.toLocaleString("zh-CN")}</strong><br/>红包 ${hongbaoCount} 个 · 元宝 ${yuanbaoCount} 个`;
       shareCardQr.src = SHARE_QR_URL;
       shareCard.hidden = false;
+    }
+
+    function showSaveToast(message) {
+      saveToast.textContent = message;
+      saveToast.classList.add("show");
+      if (saveToastTimer) clearTimeout(saveToastTimer);
+      saveToastTimer = setTimeout(() => {
+        saveToast.classList.remove("show");
+      }, 1800);
     }
 
     function blobToDataUrl(blob) {
@@ -1299,14 +1335,39 @@
       genShareCardBtn.textContent = "下载中...";
       try {
         const dataUrl = await renderShareCardDataUrl();
-        const link = document.createElement("a");
         const stamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, "-");
-        link.href = dataUrl;
-        link.download = `迎财神分享卡-${stamp}.png`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        genShareCardBtn.textContent = "已下载";
+        const filename = `迎财神分享卡-${stamp}.png`;
+        const blob = await (await fetch(dataUrl)).blob();
+
+        const shareWithFile = navigator.share && navigator.canShare && (() => {
+          try {
+            const file = new File([blob], filename, { type: "image/png" });
+            return navigator.canShare({ files: [file] }) ? file : null;
+          } catch (_) {
+            return null;
+          }
+        })();
+
+        if (shareWithFile) {
+          await navigator.share({
+            files: [shareWithFile],
+            title: "迎财神分享卡",
+            text: "初五迎财神，八方来财"
+          });
+          genShareCardBtn.textContent = "已保存";
+          showSaveToast("已保存dioxin相册");
+        } else {
+          const objectUrl = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = objectUrl;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(objectUrl), 1200);
+          genShareCardBtn.textContent = "已保存";
+          showSaveToast("已保存dioxin相册");
+        }
       } catch (_) {
         genShareCardBtn.textContent = "下载失败，请重试";
       } finally {
