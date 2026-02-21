@@ -31,6 +31,9 @@
       overflow: hidden;
       color: #fff3c8;
       font-family: "ZCOOL QingKe HuangYou", "PingFang SC", sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
       background:
         radial-gradient(circle at 14% 8%, #ffe07d59 0%, transparent 26%),
         radial-gradient(circle at 86% 10%, #ffb14f4d 0%, transparent 24%),
@@ -55,6 +58,14 @@
         repeating-linear-gradient(30deg, #ffffff0a 0 10px, transparent 10px 20px);
       z-index: -1;
       opacity: 0.6;
+    }
+
+    img {
+      -webkit-user-drag: none;
+      user-drag: none;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
     }
 
     .title {
@@ -436,6 +447,9 @@
       animation: rain-fall var(--dur) linear forwards;
       transform: translate3d(0, -10vh, 0);
       will-change: transform;
+      pointer-events: auto;
+      cursor: pointer;
+      touch-action: manipulation;
     }
 
     .hongbao-drop::before {
@@ -469,6 +483,21 @@
       animation: rain-fall var(--dur) linear forwards;
       transform: translate3d(0, -10vh, 0);
       will-change: transform;
+      pointer-events: auto;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .drop-collected {
+      pointer-events: none;
+    }
+
+    .drop-collected.hongbao-drop {
+      animation: collect-hongbao 440ms ease-out forwards !important;
+    }
+
+    .drop-collected.yuanbao-drop {
+      animation: collect-yuanbao 520ms ease-out forwards !important;
     }
 
     .yuanbao-drop::before {
@@ -500,6 +529,43 @@
     body.phase-give .wish {
       opacity: 1;
       transform: translateX(-50%) translateY(0);
+    }
+
+    .score-board {
+      position: absolute;
+      left: min(4vw, 22px);
+      top: calc(env(safe-area-inset-top, 0px) + min(1.8vw, 12px));
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 2px solid #ffd777;
+      background: #4b130fd9;
+      color: #ffe9a7;
+      font-size: clamp(0.88rem, 1.7vw, 1.02rem);
+      letter-spacing: 0.04em;
+      text-shadow: 0 0 6px #3a1200;
+      white-space: nowrap;
+      z-index: 32;
+      pointer-events: none;
+    }
+
+    .score-pop {
+      position: fixed;
+      left: 0;
+      top: 0;
+      transform: translate(-50%, -50%);
+      color: #ffe37f;
+      font-size: 1.05rem;
+      letter-spacing: 0.02em;
+      text-shadow: 0 0 10px #8a2a00;
+      pointer-events: none;
+      z-index: 60;
+      animation: score-pop 700ms ease-out forwards;
+      white-space: nowrap;
+    }
+
+    .score-pop.yuanbao {
+      color: #ffefb5;
+      text-shadow: 0 0 10px #ac6c00;
     }
 
     .controls {
@@ -602,6 +668,24 @@
       50% { transform: translateY(-4px); }
     }
 
+    @keyframes collect-hongbao {
+      0% { opacity: 1; transform: scale(1) rotate(0deg); }
+      60% { opacity: 1; transform: scale(1.26) rotate(16deg); }
+      100% { opacity: 0; transform: scale(0.22) rotate(34deg); }
+    }
+
+    @keyframes collect-yuanbao {
+      0% { opacity: 1; transform: scale(1) rotate(0deg); }
+      45% { opacity: 1; transform: scale(1.24) rotate(-10deg); }
+      100% { opacity: 0; transform: scale(0.2) rotate(-22deg); }
+    }
+
+    @keyframes score-pop {
+      0% { opacity: 0; transform: translate(-50%, -40%) scale(0.68); }
+      16% { opacity: 1; transform: translate(-50%, -52%) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -178%) scale(1.06); }
+    }
+
     @media (max-width: 960px) {
       .door-zone {
         left: 50%;
@@ -671,6 +755,12 @@
         bottom: calc(env(safe-area-inset-bottom, 0px) + 76px);
       }
 
+      .score-board {
+        top: calc(env(safe-area-inset-top, 0px) + 8px);
+        font-size: 0.86rem;
+        padding: 7px 10px;
+      }
+
       .wish {
         bottom: calc(env(safe-area-inset-bottom, 0px) + 30px);
         font-size: clamp(1rem, 3.8vw, 1.22rem);
@@ -721,6 +811,14 @@
         right: auto;
         bottom: calc(env(safe-area-inset-bottom, 0px) + 104px);
         transform: translateX(-50%);
+      }
+
+      .score-board {
+        left: 50%;
+        top: calc(env(safe-area-inset-top, 0px) + 8px);
+        transform: translateX(-50%);
+        font-size: 0.8rem;
+        padding: 7px 10px;
       }
 
       .wish {
@@ -781,6 +879,7 @@
     <div class="rain-layer yuanbao-rain" id="yuanbaoRain"></div>
     <div class="rain-layer hongbao-rain" id="hongbaoRain"></div>
     <p class="wish">喵财神进门，八方来财，金银满仓！</p>
+    <p class="score-board" id="scoreBoard">红包 0 · 元宝 0 · 财运值 0</p>
 
     <p class="music-hint">已自动播放，iPhone 轻触页面可立即开声</p>
 
@@ -816,6 +915,45 @@
     let hongbaoTimer = null;
     let yuanbaoTimer = null;
     let startedMutedAutoplay = false;
+    let hongbaoCount = 0;
+    let yuanbaoCount = 0;
+    let fortuneTotal = 0;
+
+    function updateScoreBoard() {
+      const scoreBoard = document.getElementById("scoreBoard");
+      scoreBoard.textContent = `红包 ${hongbaoCount} · 元宝 ${yuanbaoCount} · 财运值 ${fortuneTotal.toLocaleString("zh-CN")}`;
+    }
+
+    function showScorePop(x, y, text, kind) {
+      const pop = document.createElement("span");
+      pop.className = `score-pop${kind === "yuanbao" ? " yuanbao" : ""}`;
+      pop.textContent = text;
+      pop.style.left = `${x}px`;
+      pop.style.top = `${y}px`;
+      document.body.appendChild(pop);
+      pop.addEventListener("animationend", () => pop.remove(), { once: true });
+    }
+
+    function collectDrop(dropEl, kind, event) {
+      if (!dropEl || dropEl.classList.contains("drop-collected")) return;
+      dropEl.classList.add("drop-collected");
+
+      let added = 88;
+      if (kind === "yuanbao") {
+        yuanbaoCount += 1;
+        added = 188;
+      } else {
+        hongbaoCount += 1;
+      }
+
+      fortuneTotal += added;
+      updateScoreBoard();
+
+      const x = event && typeof event.clientX === "number" ? event.clientX : window.innerWidth / 2;
+      const y = event && typeof event.clientY === "number" ? event.clientY : window.innerHeight / 2;
+      showScorePop(x, y, `+${added}`, kind);
+      dropEl.addEventListener("animationend", () => dropEl.remove(), { once: true });
+    }
 
     function clearStory() {
       phases.forEach((name) => body.classList.remove(name));
@@ -850,6 +988,10 @@
       packet.style.setProperty("--drift", `${-85 + Math.floor(Math.random() * 170)}px`);
       packet.style.setProperty("--r0", `${-50 + Math.floor(Math.random() * 100)}deg`);
       packet.style.setProperty("--r1", `${-500 + Math.floor(Math.random() * 1000)}deg`);
+      packet.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        collectDrop(packet, "hongbao", event);
+      });
       packet.addEventListener("animationend", () => packet.remove(), { once: true });
       hongbaoRain.appendChild(packet);
     }
@@ -865,6 +1007,10 @@
       ingot.style.setProperty("--drift", `${-60 + Math.floor(Math.random() * 120)}px`);
       ingot.style.setProperty("--r0", `${-26 + Math.floor(Math.random() * 52)}deg`);
       ingot.style.setProperty("--r1", `${-240 + Math.floor(Math.random() * 480)}deg`);
+      ingot.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        collectDrop(ingot, "yuanbao", event);
+      });
       ingot.addEventListener("animationend", () => ingot.remove(), { once: true });
       yuanbaoRain.appendChild(ingot);
     }
@@ -1127,6 +1273,16 @@
 
     musicBtn.addEventListener("click", toggleMusic);
 
+    ["contextmenu", "dragstart"].forEach((eventName) => {
+      document.addEventListener(eventName, (event) => event.preventDefault());
+    });
+    document.addEventListener("selectstart", (event) => {
+      const target = event.target;
+      if (target && target.closest && target.closest("input, textarea")) return;
+      event.preventDefault();
+    });
+
+    updateScoreBoard();
     updateMusicBtn();
     playStory();
     tryPlayMusic();
