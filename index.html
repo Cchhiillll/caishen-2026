@@ -61,9 +61,10 @@
       position: absolute;
       top: calc(env(safe-area-inset-top, 0px) + 0.4%);
       width: 100%;
+      white-space: nowrap;
       text-align: center;
       font-family: "Long Cang", cursive;
-      font-size: clamp(2.2rem, 6vw, 4.1rem);
+      font-size: clamp(1.7rem, 5.5vw, 4.1rem);
       letter-spacing: 0.08em;
       text-shadow: 0 0 22px #ffcf56b2;
       opacity: 0;
@@ -525,6 +526,7 @@
       display: flex;
       gap: 10px;
       align-items: center;
+      z-index: 30;
     }
 
     .btn {
@@ -627,13 +629,17 @@
 
       .title {
         top: calc(env(safe-area-inset-top, 0px) + 0.2%);
+        font-size: clamp(1.35rem, 5.7vw, 2.2rem);
+        letter-spacing: 0.04em;
       }
 
       .door-zone {
         left: 50%;
+        right: auto;
         bottom: 12%;
         width: min(62vw, 320px);
         height: min(84vw, 440px);
+        transform: translateX(-50%);
       }
 
       .knock-line {
@@ -672,13 +678,17 @@
 
       .title {
         top: calc(env(safe-area-inset-top, 0px) + 0.1%);
-        font-size: clamp(1.8rem, 9vw, 2.8rem);
+        font-size: clamp(1.15rem, 6.2vw, 1.7rem);
+        letter-spacing: 0.03em;
       }
 
       .door-zone {
+        left: 50%;
+        right: auto;
         bottom: 9%;
         width: min(64vw, 300px);
         height: min(88vw, 430px);
+        transform: translateX(-50%);
       }
 
       .cat-caishen {
