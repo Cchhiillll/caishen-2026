@@ -670,6 +670,11 @@
       .controls {
         bottom: calc(env(safe-area-inset-bottom, 0px) + 76px);
       }
+
+      .wish {
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 30px);
+        font-size: clamp(1rem, 3.8vw, 1.22rem);
+      }
     }
 
     @media (max-width: 520px) {
@@ -719,8 +724,8 @@
       }
 
       .wish {
-        bottom: 14%;
-        font-size: clamp(1.05rem, 5.2vw, 1.35rem);
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 26px);
+        font-size: clamp(0.94rem, 4.7vw, 1.16rem);
       }
 
       .gate-column {
