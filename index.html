@@ -16,6 +16,7 @@
       --gold-2: #f1a80f;
       --ink: #251007;
       --ease-out: cubic-bezier(0.2, 0.75, 0.16, 1);
+      --duilian-size: clamp(1.05rem, 2.35vw, 1.42rem);
     }
 
     * {
@@ -192,8 +193,9 @@
       border-radius: 8px;
       color: #ffe9ad;
       background: linear-gradient(180deg, #6f0918, #4c0812);
-      letter-spacing: 0.12em;
-      font-size: clamp(0.95rem, 2.1vw, 1.3rem);
+      font-family: "Long Cang", cursive;
+      letter-spacing: 0.08em;
+      font-size: var(--duilian-size);
       text-shadow: 0 0 8px #00000088;
     }
 
@@ -229,7 +231,8 @@
       text-orientation: upright;
       letter-spacing: 0.18em;
       line-height: 1.1;
-      font-size: clamp(0.95rem, 1.95vw, 1.28rem);
+      font-family: "Long Cang", cursive;
+      font-size: var(--duilian-size);
       color: #ffe8a5;
       text-shadow: 0 0 6px #300000cc;
       padding: 10px 4px;
@@ -886,8 +889,12 @@
         font-size: 1rem;
       }
 
+      .gate-plaque,
       .couplet-text {
-        font-size: clamp(0.9rem, 3vw, 1.08rem);
+        font-size: clamp(1rem, 3.15vw, 1.2rem);
+      }
+
+      .couplet-text {
         letter-spacing: 0.16em;
       }
 
@@ -993,8 +1000,12 @@
         width: 13%;
       }
 
+      .gate-plaque,
       .couplet-text {
-        font-size: 0.86rem;
+        font-size: 0.96rem;
+      }
+
+      .couplet-text {
         padding: 8px 3px;
       }
     }
