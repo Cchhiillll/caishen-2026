@@ -1051,12 +1051,12 @@
       <div class="controls">
         <button class="btn" id="replayBtn" type="button">再迎一次</button>
       </div>
-      <p class="countdown-board" id="countdownBoard">抢红包倒计时 60s</p>
+      <p class="countdown-board" id="countdownBoard">抢红包倒计时 30s</p>
     </div>
   </main>
   <section class="share-modal" id="shareModal" aria-hidden="true">
     <div class="share-dialog" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
-      <h2 class="share-title" id="shareTitle">60秒到，财运正旺</h2>
+      <h2 class="share-title" id="shareTitle">30秒到，财运正旺</h2>
       <p class="share-subtitle" id="shareSummary">来生成喜庆分享卡，晒出你的迎财神战绩。</p>
       <div class="share-actions">
         <button class="btn" id="genShareCardBtn" type="button">下载分享卡片</button>
@@ -1109,7 +1109,7 @@
     let yuanbaoCount = 0;
     let fortuneTotal = 0;
     let lastHapticAt = 0;
-    let countdownLeft = 60;
+    let countdownLeft = 30;
     let countdownTimer = null;
     let shareReminderShown = false;
     let shareQrDataUrl = "";
@@ -1138,7 +1138,7 @@
     }
 
     function buildShareSummaryText() {
-      return `本轮60秒：红包 ${hongbaoCount} 个，元宝 ${yuanbaoCount} 个，财运值 ${fortuneTotal.toLocaleString("zh-CN")}。`;
+      return `本轮30秒：红包 ${hongbaoCount} 个，元宝 ${yuanbaoCount} 个，财运值 ${fortuneTotal.toLocaleString("zh-CN")}。`;
     }
 
     function openShareReminder() {
@@ -1148,7 +1148,7 @@
 
     function startCountdown() {
       if (countdownTimer) return;
-      countdownLeft = 60;
+      countdownLeft = 30;
       shareReminderShown = false;
       updateCountdownBoard();
       countdownTimer = setInterval(() => {
@@ -1381,7 +1381,7 @@
       }
       stopCountdown();
       setShareModalOpen(false);
-      countdownLeft = 60;
+      countdownLeft = 30;
       updateCountdownBoard();
       stopRains();
     }
