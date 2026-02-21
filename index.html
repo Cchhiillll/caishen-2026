@@ -62,6 +62,7 @@
       top: calc(env(safe-area-inset-top, 0px) + 0.4%);
       width: 100%;
       white-space: nowrap;
+      overflow: hidden;
       text-align: center;
       font-family: "Long Cang", cursive;
       font-size: clamp(1.7rem, 5.5vw, 4.1rem);
@@ -217,7 +218,7 @@
       text-orientation: upright;
       letter-spacing: 0.18em;
       line-height: 1.1;
-      font-size: clamp(0.82rem, 1.65vw, 1.1rem);
+      font-size: clamp(0.95rem, 1.95vw, 1.28rem);
       color: #ffe8a5;
       text-shadow: 0 0 6px #300000cc;
       padding: 10px 4px;
@@ -636,14 +637,14 @@
       .door-zone {
         left: 50%;
         right: auto;
-        bottom: 12%;
+        bottom: 16%;
         width: min(62vw, 320px);
         height: min(84vw, 440px);
         transform: translateX(-50%);
       }
 
       .knock-line {
-        bottom: calc(12% + min(84vw, 440px) + 12px);
+        bottom: calc(16% + min(84vw, 440px) + 12px);
       }
 
       .cat-caishen {
@@ -666,8 +667,8 @@
       }
 
       .couplet-text {
-        font-size: clamp(0.72rem, 2.2vw, 0.92rem);
-        letter-spacing: 0.14em;
+        font-size: clamp(0.9rem, 3vw, 1.08rem);
+        letter-spacing: 0.16em;
       }
     }
 
@@ -678,17 +679,21 @@
 
       .title {
         top: calc(env(safe-area-inset-top, 0px) + 0.1%);
-        font-size: clamp(1.15rem, 6.2vw, 1.7rem);
-        letter-spacing: 0.03em;
+        font-size: clamp(1.02rem, 5.3vw, 1.45rem);
+        letter-spacing: 0.015em;
       }
 
       .door-zone {
         left: 50%;
         right: auto;
-        bottom: 9%;
+        bottom: 13%;
         width: min(64vw, 300px);
         height: min(88vw, 430px);
         transform: translateX(-50%);
+      }
+
+      .knock-line {
+        bottom: calc(13% + min(88vw, 430px) + 10px);
       }
 
       .cat-caishen {
@@ -723,8 +728,8 @@
       }
 
       .couplet-text {
-        font-size: 0.72rem;
-        padding: 7px 3px;
+        font-size: 0.86rem;
+        padding: 8px 3px;
       }
     }
   </style>
@@ -767,7 +772,6 @@
         <img id="catSource" src="assets/cat-caishen.png" alt="两只猫财神图" />
       </div>
       <figcaption class="cat-caption">两位财神猫进门送福</figcaption>
-      <span class="gift-tag">金元宝 x N</span>
     </figure>
 
     <div class="rain-layer yuanbao-rain" id="yuanbaoRain"></div>
