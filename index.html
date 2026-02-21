@@ -1,599 +1,1329 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>迎财神</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet" />
-    <style>
-        :root {
-            --bg-a: #1c1b3b;
-            --bg-b: #411617;
-            --gold: #ffd85a;
-            --gold-deep: #f3a500;
-            --red: #bf1e2e;
-            --red-deep: #7f1322;
-            --ink: #2f1f14;
-            --door-w: min(52vw, 340px);
-            --door-h: min(66vw, 420px);
-            --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            min-height: 100vh;
-            display: grid;
-            place-items: center;
-            overflow: hidden;
-            font-family: "ZCOOL KuaiLe", "PingFang SC", sans-serif;
-            color: #fff6d4;
-            background:
-                radial-gradient(circle at 18% 10%, #ffdb7a40 0%, transparent 32%),
-                radial-gradient(circle at 86% 18%, #ff7d4745 0%, transparent 30%),
-                linear-gradient(150deg, var(--bg-a), var(--bg-b) 60%, #120f25);
-        }
-        .scene {
-            width: min(1080px, 100vw);
-            height: min(760px, 100vh);
-            position: relative;
-            isolation: isolate;
-            overflow: hidden;
-        }
-        .scene::before {
-            content: "";
-            position: absolute;
-            inset: 8% 12%;
-            background:
-                radial-gradient(circle at center, #ffd85a4a, transparent 62%),
-                repeating-linear-gradient(
-                    45deg,
-                    #ffffff0f 0 10px,
-                    #ffffff00 10px 20px
-                );
-            filter: blur(1px);
-            opacity: 0.55;
-            z-index: -1;
-        }
-        .title {
-            position: absolute;
-            top: 4%;
-            width: 100%;
-            text-align: center;
-            font-family: "Ma Shan Zheng", "STKaiti", cursive;
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            letter-spacing: 0.08em;
-            text-shadow: 0 0 16px #ffda68b0;
-            opacity: 0;
-            transform: translateY(-12px);
-            transition: 800ms var(--ease);
-        }
-        body.phase-enter .title,
-        body.phase-give .title {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .ground {
-            position: absolute;
-            left: 50%;
-            bottom: 11%;
-            width: min(92vw, 920px);
-            height: clamp(84px, 15vw, 140px);
-            transform: translateX(-50%);
-            border-radius: 50%;
-            background: radial-gradient(circle at center, #ffcf5d34, #00000000 72%);
-            filter: blur(2px);
-        }
-        .house {
-            position: absolute;
-            left: 50%;
-            bottom: 16%;
-            width: var(--door-w);
-            height: var(--door-h);
-            transform: translateX(-50%);
-        }
-        .door-frame {
-            position: absolute;
-            inset: 0;
-            border: 10px solid #e3a51f;
-            border-radius: 18px;
-            background: linear-gradient(#6b1b1f, #551017);
-            box-shadow: 0 24px 36px #00000055, inset 0 0 0 8px #c93440;
-            overflow: hidden;
-        }
-        .door-side {
-            position: absolute;
-            top: 0;
-            width: 50%;
-            height: 100%;
-            background: linear-gradient(180deg, #bf2534, #8f1a2a);
-            border: 3px solid #d99f24;
-            transition: transform 1300ms var(--ease);
-            will-change: transform;
-        }
-        .door-left {
-            left: 0;
-            transform-origin: left center;
-        }
-        .door-right {
-            right: 0;
-            transform-origin: right center;
-        }
-        .door-pattern {
-            position: absolute;
-            inset: 14% 10%;
-            border-radius: 8px;
-            border: 2px solid #f8d273;
-            display: grid;
-            place-items: center;
-            color: #ffe799;
-            font-size: clamp(1rem, 2.8vw, 1.8rem);
-            text-shadow: 0 0 8px #00000066;
-        }
-        .knocker {
-            position: absolute;
-            top: 50%;
-            width: 16px;
-            aspect-ratio: 1;
-            border-radius: 50%;
-            background: radial-gradient(circle at 28% 20%, #fff2b0, #d08d00);
-            box-shadow: 0 0 0 5px #c48307;
-            transform: translateY(-50%);
-        }
-        .door-left .knocker {
-            right: 14%;
-        }
-        .door-right .knocker {
-            left: 14%;
-        }
-        body.phase-knock .door-frame {
-            animation: knock-door 0.45s ease-in-out 0s 5;
-        }
-        body.phase-open .door-left,
-        body.phase-enter .door-left,
-        body.phase-give .door-left {
-            transform: perspective(800px) rotateY(-108deg);
-        }
-        body.phase-open .door-right,
-        body.phase-enter .door-right,
-        body.phase-give .door-right {
-            transform: perspective(800px) rotateY(108deg);
-        }
-        .knock-text {
-            position: absolute;
-            left: 50%;
-            bottom: calc(16% + var(--door-h) + 12px);
-            transform: translateX(-50%);
-            background: #3b1f1399;
-            border: 2px solid #ffde7f;
-            border-radius: 999px;
-            padding: 10px 18px;
-            font-size: clamp(1rem, 2.5vw, 1.6rem);
-            opacity: 0;
-            letter-spacing: 0.12em;
-        }
-        body.phase-knock .knock-text {
-            opacity: 1;
-            animation: pulse 0.55s ease-in-out 0s 5;
-        }
-        .caishen {
-            position: absolute;
-            left: calc(50% + min(40vw, 265px));
-            bottom: 16%;
-            width: min(30vw, 220px);
-            aspect-ratio: 0.8;
-            transform: translateX(0);
-            transition: transform 2000ms var(--ease);
-            filter: drop-shadow(0 14px 20px #00000075);
-        }
-        body.phase-enter .caishen,
-        body.phase-give .caishen {
-            transform: translateX(calc(-1 * min(37vw, 240px)));
-        }
-        .body {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 76%;
-            border-radius: 22% 22% 16% 16%;
-            background: linear-gradient(180deg, #dc2c2e, #992323);
-            border: 5px solid #f4c03f;
-        }
-        .belly {
-            position: absolute;
-            left: 50%;
-            top: 38%;
-            transform: translateX(-50%);
-            width: 56%;
-            height: 42%;
-            border-radius: 50%;
-            background: radial-gradient(circle at 50% 26%, #ffeaa3, #f6c54c);
-            border: 4px solid #ac6b0f;
-            display: grid;
-            place-items: center;
-            color: #9b141b;
-            font-size: clamp(1.1rem, 3.4vw, 2rem);
-            font-weight: 700;
-        }
-        .head {
-            position: absolute;
-            left: 50%;
-            top: -6%;
-            transform: translateX(-50%);
-            width: 66%;
-            aspect-ratio: 1.05;
-            border-radius: 50%;
-            background: #ffd9a4;
-            border: 5px solid #c37f40;
-        }
-        .hat {
-            position: absolute;
-            left: 50%;
-            top: -14%;
-            transform: translateX(-50%);
-            width: 95%;
-            height: 24%;
-            border-radius: 999px;
-            background: linear-gradient(180deg, #111, #2f2f2f);
-            border: 3px solid #f2cc58;
-        }
-        .eye {
-            position: absolute;
-            top: 45%;
-            width: 13%;
-            height: 8%;
-            border-radius: 999px;
-            background: #4d2b18;
-        }
-        .eye.left {
-            left: 26%;
-        }
-        .eye.right {
-            right: 26%;
-        }
-        .moustache {
-            position: absolute;
-            left: 50%;
-            bottom: 18%;
-            width: 58%;
-            height: 18%;
-            transform: translateX(-50%);
-            border-bottom: 6px solid #6a3117;
-            border-radius: 0 0 50% 50%;
-        }
-        .arm {
-            position: absolute;
-            top: 42%;
-            width: 34%;
-            height: 16%;
-            border-radius: 999px;
-            background: #c91f2b;
-            border: 4px solid #f2c143;
-            transform-origin: 12% 50%;
-        }
-        .arm.left {
-            left: -14%;
-            transform: rotate(22deg);
-        }
-        .arm.right {
-            right: -18%;
-            transform: rotate(-28deg);
-            transform-origin: 92% 50%;
-            animation: knock-hand 0.45s ease-in-out 0s 5;
-            animation-play-state: paused;
-        }
-        body.phase-knock .arm.right {
-            animation-play-state: running;
-        }
-        .yuanbao {
-            position: absolute;
-            right: -26%;
-            top: 53%;
-            width: 44%;
-            height: 20%;
-            border-radius: 56% 56% 42% 42%;
-            background: linear-gradient(180deg, #ffe07e, #efad20);
-            border: 4px solid #b17708;
-            display: grid;
-            place-items: center;
-            color: #8c1c1c;
-            font-size: clamp(0.8rem, 2vw, 1.2rem);
-            box-shadow: 0 8px 12px #00000045;
-            transform: translateY(8px);
-            opacity: 0;
-            transition: 600ms var(--ease);
-        }
-        body.phase-give .yuanbao {
-            transform: translateY(0);
-            opacity: 1;
-        }
-        .ingots {
-            position: absolute;
-            left: 50%;
-            bottom: 28%;
-            width: min(78vw, 860px);
-            height: 48%;
-            transform: translateX(-50%);
-            pointer-events: none;
-        }
-        .ingot {
-            position: absolute;
-            left: 50%;
-            bottom: 12%;
-            width: clamp(26px, 5vw, 52px);
-            aspect-ratio: 1.18;
-            border-radius: 44% 44% 52% 52%;
-            background: linear-gradient(180deg, #ffe083, #ecab1e);
-            border: 3px solid #9f6708;
-            opacity: 0;
-            transform: translate(-50%, 0) scale(0.5);
-        }
-        body.phase-give .ingot {
-            animation: fly var(--dur) var(--delay) var(--ease) forwards;
-        }
-        .blessing {
-            position: absolute;
-            left: 50%;
-            bottom: calc(16% + var(--door-h) + 60px);
-            transform: translateX(-50%) translateY(10px);
-            width: min(90vw, 860px);
-            text-align: center;
-            font-size: clamp(1.2rem, 3vw, 2rem);
-            color: #ffe8a6;
-            text-shadow: 0 0 12px #8d2e05;
-            opacity: 0;
-            transition: 800ms var(--ease);
-        }
-        body.phase-give .blessing {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-        .replay {
-            position: absolute;
-            right: min(4vw, 28px);
-            bottom: min(4vw, 24px);
-            border: 2px solid #ffde84;
-            background: #4e1219db;
-            color: #ffe89e;
-            font: inherit;
-            padding: 10px 14px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: 220ms ease;
-        }
-        .replay:hover {
-            transform: translateY(-2px);
-            background: #6e1723;
-        }
-        @keyframes knock-door {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-4px); }
-            75% { transform: translateX(4px); }
-        }
-        @keyframes knock-hand {
-            0%, 100% { transform: rotate(-28deg); }
-            50% { transform: rotate(-42deg) translateX(-6px); }
-        }
-        @keyframes pulse {
-            0%, 100% { transform: translateX(-50%) scale(1); }
-            50% { transform: translateX(-50%) scale(1.07); }
-        }
-        @keyframes fly {
-            0% { opacity: 0; transform: translate(-50%, 0) scale(0.3); }
-            15% { opacity: 1; }
-            100% { opacity: 0; transform: translate(calc(-50% + var(--x)), calc(-1 * var(--y))) rotate(var(--r)) scale(1); }
-        }
-        @media (max-width: 768px) {
-            .scene { height: 100vh; }
-            .house { bottom: 20%; }
-            .caishen { width: min(38vw, 210px); bottom: 20%; }
-            .ingots { bottom: 34%; }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>猫猫财神登门</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Long+Cang&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --red-1: #8f0f1d;
+      --red-2: #c1192b;
+      --red-3: #420610;
+      --gold-1: #ffd256;
+      --gold-2: #f1a80f;
+      --ink: #251007;
+      --ease-out: cubic-bezier(0.2, 0.75, 0.16, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      color: #fff3c8;
+      font-family: "ZCOOL QingKe HuangYou", "PingFang SC", sans-serif;
+      background:
+        radial-gradient(circle at 14% 8%, #ffe07d59 0%, transparent 26%),
+        radial-gradient(circle at 86% 10%, #ffb14f4d 0%, transparent 24%),
+        radial-gradient(circle at 50% 90%, #b80e2b35 0%, transparent 35%),
+        linear-gradient(155deg, #290b2f 0%, var(--red-1) 38%, var(--red-3) 100%);
+    }
+
+    .festival {
+      position: relative;
+      width: min(1200px, 100vw);
+      height: min(760px, 100vh);
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .festival::before {
+      content: "";
+      position: absolute;
+      inset: 10% 8%;
+      background:
+        radial-gradient(circle at center, #ffe27f4d 0%, transparent 58%),
+        repeating-linear-gradient(30deg, #ffffff0a 0 10px, transparent 10px 20px);
+      z-index: -1;
+      opacity: 0.6;
+    }
+
+    .title {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + 0.4%);
+      width: 100%;
+      text-align: center;
+      font-family: "Long Cang", cursive;
+      font-size: clamp(2.2rem, 6vw, 4.1rem);
+      letter-spacing: 0.08em;
+      text-shadow: 0 0 22px #ffcf56b2;
+      opacity: 0;
+      transform: translateY(-16px);
+      transition: 700ms var(--ease-out);
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    body.phase-enter .title,
+    body.phase-give .title {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .lantern {
+      position: absolute;
+      top: -8px;
+      width: clamp(40px, 5vw, 62px);
+      aspect-ratio: 0.78;
+      border-radius: 50% 50% 44% 44%;
+      background: linear-gradient(180deg, #ec3646, #8f0b1d);
+      border: 3px solid #f0ba3a;
+      box-shadow: inset 0 0 0 3px #f8d87947, 0 10px 18px #00000045;
+      animation: sway var(--dur) ease-in-out infinite;
+      transform-origin: top center;
+    }
+
+    .lantern::before {
+      content: "";
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      width: 2px;
+      height: 24px;
+      transform: translateX(-50%);
+      background: #f4cd5d;
+    }
+
+    .lantern::after {
+      content: "";
+      position: absolute;
+      bottom: -16px;
+      left: 50%;
+      width: 12px;
+      height: 16px;
+      transform: translateX(-50%);
+      border-radius: 2px 2px 6px 6px;
+      background: linear-gradient(180deg, #ffe898, #f0a91d);
+    }
+
+    .lantern.left {
+      left: 6%;
+      --dur: 3.8s;
+    }
+
+    .lantern.right {
+      right: 6%;
+      --dur: 4.2s;
+    }
+
+    .stage-shadow {
+      position: absolute;
+      left: 50%;
+      bottom: 11%;
+      width: min(920px, 94vw);
+      height: clamp(82px, 12vw, 120px);
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: radial-gradient(circle at center, #ffd76c4f, transparent 72%);
+      filter: blur(2px);
+    }
+
+    .door-zone {
+      position: absolute;
+      left: 50%;
+      bottom: 13%;
+      width: min(50vw, 420px);
+      height: min(70vw, 500px);
+      transform: translateX(-50%);
+      perspective: 1400px;
+      z-index: 4;
+    }
+
+    .gate-crown {
+      position: absolute;
+      left: -10%;
+      top: -18%;
+      width: 120%;
+      height: 22%;
+      border-radius: 14px 14px 18px 18px;
+      background: linear-gradient(180deg, #7a111f, #550a14);
+      border: 5px solid #efbf53;
+      box-shadow: 0 14px 24px #00000057, inset 0 0 0 3px #ffde8b30;
+      display: grid;
+      place-items: center;
+      z-index: 9;
+    }
+
+    .gate-crown::before {
+      content: "";
+      position: absolute;
+      inset: 10% 5%;
+      border-radius: 10px 10px 16px 16px;
+      border: 2px solid #ffd98a6e;
+    }
+
+    .gate-plaque {
+      position: relative;
+      z-index: 10;
+      padding: 6px 18px;
+      border: 2px solid #f6d17e;
+      border-radius: 8px;
+      color: #ffe9ad;
+      background: linear-gradient(180deg, #6f0918, #4c0812);
+      letter-spacing: 0.12em;
+      font-size: clamp(0.95rem, 2.1vw, 1.3rem);
+      text-shadow: 0 0 8px #00000088;
+    }
+
+    .gate-column {
+      position: absolute;
+      top: 8%;
+      width: 12%;
+      height: 96%;
+      border-radius: 14px;
+      border: 3px solid #e9b848;
+      background:
+        repeating-linear-gradient(
+          180deg,
+          #b9162a 0 18px,
+          #921224 18px 36px
+        );
+      box-shadow: inset 0 0 0 2px #ffd76b4a;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .gate-column.left {
+      left: -11%;
+    }
+
+    .gate-column.right {
+      right: -11%;
+    }
+
+    .couplet-text {
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      letter-spacing: 0.18em;
+      line-height: 1.1;
+      font-size: clamp(0.82rem, 1.65vw, 1.1rem);
+      color: #ffe8a5;
+      text-shadow: 0 0 6px #300000cc;
+      padding: 10px 4px;
+      border-radius: 8px;
+      border: 1px solid #f6c970;
+      background: linear-gradient(180deg, #d81a30, #9e1424);
+      box-shadow: inset 0 0 0 1px #ffefb233;
+      z-index: 2;
+      user-select: none;
+    }
+
+    .door-frame {
+      position: absolute;
+      inset: 6% 0 0;
+      border: 12px solid var(--gold-2);
+      border-radius: 16px;
+      background: linear-gradient(180deg, #7c101f, #4f0a14);
+      overflow: hidden;
+      box-shadow: 0 18px 35px #0000005e, inset 0 0 0 7px #d83245;
+      z-index: 3;
+    }
+
+    .door-frame::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 0;
+      width: 6px;
+      height: 100%;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, #ffd469, #bb7a0c);
+      z-index: 2;
+      opacity: 0.7;
+    }
+
+    .door {
+      position: absolute;
+      top: 0;
+      width: 50%;
+      height: 100%;
+      border: 4px solid #efbf55;
+      background: linear-gradient(180deg, #d02338, #881022);
+      transition: transform 1200ms var(--ease-out);
+      z-index: 3;
+    }
+
+    .door.left {
+      left: 0;
+      transform-origin: left center;
+    }
+
+    .door.right {
+      right: 0;
+      transform-origin: right center;
+    }
+
+    .door .label {
+      position: absolute;
+      inset: 13% 10%;
+      border: 2px solid #ffe18d;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      color: #ffeaa3;
+      font-size: clamp(1.1rem, 3vw, 1.8rem);
+      text-shadow: 0 0 8px #00000066;
+    }
+
+    .door .ring {
+      position: absolute;
+      top: 50%;
+      width: 18px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      transform: translateY(-50%);
+      background: radial-gradient(circle at 30% 28%, #fff3c0, #ca8208);
+      box-shadow: 0 0 0 6px #996310;
+    }
+
+    .door.left .ring {
+      right: 16%;
+    }
+
+    .door.right .ring {
+      left: 16%;
+    }
+
+    .knock-line {
+      position: absolute;
+      left: 50%;
+      bottom: calc(13% + min(70vw, 500px) + 16px);
+      transform: translateX(-50%);
+      padding: 9px 16px;
+      border: 2px solid #ffe08a;
+      border-radius: 999px;
+      background: #37160fd9;
+      letter-spacing: 0.12em;
+      font-size: clamp(1rem, 2.4vw, 1.4rem);
+      opacity: 0;
+    }
+
+    body.phase-knock .door-frame {
+      animation: door-shake 0.46s ease-in-out 0s 4;
+    }
+
+    body.phase-knock .knock-line {
+      opacity: 1;
+      animation: echo 0.46s ease-in-out 0s 4;
+    }
+
+    body.phase-open .door.left,
+    body.phase-enter .door.left,
+    body.phase-give .door.left {
+      transform: rotateY(-112deg);
+    }
+
+    body.phase-open .door.right,
+    body.phase-enter .door.right,
+    body.phase-give .door.right {
+      transform: rotateY(112deg);
+    }
+
+    .cat-caishen {
+      position: absolute;
+      left: 50%;
+      bottom: 12.5%;
+      width: min(50vw, 560px);
+      opacity: 0;
+      transform: translate(-50%, 14%) scale(0.56);
+      transform-origin: center bottom;
+      transition: transform 1850ms var(--ease-out), opacity 720ms var(--ease-out);
+      filter: drop-shadow(0 18px 24px #0000005d);
+      z-index: 2;
+    }
+
+    body.phase-open .cat-caishen {
+      opacity: 0.25;
+      transform: translate(-50%, 11%) scale(0.62);
+    }
+
+    .cat-stage {
+      width: 100%;
+      position: relative;
+      filter: drop-shadow(0 14px 20px #00000066);
+    }
+
+    .cat-stage canvas,
+    .cat-stage img {
+      width: 100%;
+      height: auto;
+      display: block;
+      animation: breathe 2.8s ease-in-out infinite;
+    }
+
+    .cat-stage img {
+      opacity: 0;
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .cat-stage.fallback img {
+      opacity: 1;
+      position: static;
+    }
+
+    .cat-stage.fallback canvas {
+      display: none;
+    }
+
+    body.phase-enter .cat-caishen,
+    body.phase-give .cat-caishen {
+      opacity: 1;
+      transform: translate(-50%, 0) scale(1);
+      z-index: 7;
+    }
+
+    .cat-caption {
+      margin-top: 12px;
+      text-align: center;
+      font-size: clamp(0.95rem, 2vw, 1.25rem);
+      color: #ffeeb2;
+      text-shadow: 0 0 8px #4a0000;
+    }
+
+    .gift-tag {
+      position: absolute;
+      right: -8%;
+      bottom: 20%;
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 2px solid #a96a08;
+      background: linear-gradient(180deg, #ffe18a, #f1aa16);
+      color: #8a1313;
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      box-shadow: 0 10px 16px #0000004f;
+      opacity: 0;
+      transform: translateY(10px) rotate(-6deg);
+      transition: 500ms var(--ease-out);
+    }
+
+    body.phase-give .gift-tag {
+      opacity: 1;
+      transform: translateY(0) rotate(-6deg);
+    }
+
+    .rain-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .hongbao-rain {
+      z-index: 2;
+    }
+
+    .yuanbao-rain {
+      z-index: 1;
+    }
+
+    .hongbao-drop {
+      position: absolute;
+      top: -14%;
+      left: var(--x);
+      width: var(--w);
+      height: calc(var(--w) * 1.22);
+      border-radius: 8px;
+      border: 2px solid #f5cf77;
+      background:
+        linear-gradient(180deg, #eb2c42 0%, #be152b 100%);
+      box-shadow: 0 10px 14px #0000003a;
+      animation: rain-fall var(--dur) linear forwards;
+      transform: translate3d(0, -10vh, 0);
+      will-change: transform;
+    }
+
+    .hongbao-drop::before {
+      content: "福";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 58%;
+      aspect-ratio: 1;
+      transform: translate(-50%, -50%) rotate(45deg);
+      border: 1px solid #ffebbd;
+      background: #c8192f;
+      color: #ffe8a5;
+      display: grid;
+      place-items: center;
+      font-size: calc(var(--w) * 0.34);
+      text-shadow: 0 0 8px #00000066;
+    }
+
+    .yuanbao-drop {
+      position: absolute;
+      top: -12%;
+      left: var(--x);
+      width: var(--w);
+      height: calc(var(--w) * 0.72);
+      border-radius: 56% 56% 40% 40%;
+      border: 2px solid #9d6107;
+      background:
+        linear-gradient(180deg, #ffe28b 0%, #f4b02d 58%, #df9300 100%);
+      box-shadow: 0 9px 13px #00000042;
+      animation: rain-fall var(--dur) linear forwards;
+      transform: translate3d(0, -10vh, 0);
+      will-change: transform;
+    }
+
+    .yuanbao-drop::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: -32%;
+      width: 46%;
+      height: 40%;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      border: 2px solid #9d6107;
+      background: linear-gradient(180deg, #ffe8a4, #efb53e);
+    }
+
+    .wish {
+      position: absolute;
+      left: 50%;
+      bottom: 7%;
+      transform: translateX(-50%) translateY(10px);
+      width: min(92vw, 820px);
+      text-align: center;
+      font-size: clamp(1.3rem, 3.3vw, 2.05rem);
+      text-shadow: 0 0 14px #851500;
+      opacity: 0;
+      transition: 800ms var(--ease-out);
+    }
+
+    body.phase-give .wish {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .controls {
+      position: absolute;
+      right: min(4vw, 22px);
+      bottom: min(4vw, 20px);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .music-wrap {
+      position: relative;
+      display: inline-flex;
+    }
+
+    .finger-hint {
+      position: absolute;
+      right: calc(100% + 8px);
+      top: -6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: 260ms ease;
+      filter: drop-shadow(0 4px 8px #00000066);
+    }
+
+    body.need-music .finger-hint {
+      opacity: 1;
+      transform: translateY(0);
+      animation: finger-float 1.05s ease-in-out infinite;
+    }
+
+    .finger-hint::before {
+      content: "点这里";
+      white-space: nowrap;
+      font-size: 0.85rem;
+      color: #ffeab3;
+      background: #4b1320e0;
+      border: 1px solid #ffda7a;
+      border-radius: 999px;
+      padding: 3px 7px;
+    }
+
+    .finger-hint::after {
+      content: "☝";
+      font-size: 1.35rem;
+      line-height: 1;
+      animation: finger-tap 0.95s ease-in-out infinite;
+    }
+
+    .btn {
+      border: 2px solid #ffde82;
+      border-radius: 12px;
+      padding: 10px 14px;
+      background: #4a1020de;
+      color: #ffedb6;
+      font-family: inherit;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 220ms ease;
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      background: #6b1830;
+    }
+
+    .btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .music-hint {
+      position: absolute;
+      left: 50%;
+      top: 12%;
+      transform: translateX(-50%);
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid #ffd86c;
+      background: #2b1109de;
+      color: #ffecae;
+      opacity: 0;
+      transition: 260ms ease;
+      pointer-events: none;
+    }
+
+    body.music-gesture .music-hint {
+      opacity: 1;
+    }
+
+    @keyframes door-shake {
+      0%, 100% { transform: translateX(0); }
+      30% { transform: translateX(-4px); }
+      70% { transform: translateX(4px); }
+    }
+
+    @keyframes echo {
+      0%, 100% { transform: translateX(-50%) scale(1); }
+      45% { transform: translateX(-50%) scale(1.06); }
+    }
+
+    @keyframes rain-fall {
+      0% {
+        transform: translate3d(0, -10vh, 0) rotate(var(--r0));
+        opacity: 0.05;
+      }
+      12% {
+        opacity: 1;
+      }
+      100% {
+        transform: translate3d(var(--drift), 120vh, 0) rotate(var(--r1));
+        opacity: 0.95;
+      }
+    }
+
+    @keyframes sway {
+      0%, 100% { transform: rotate(-3deg); }
+      50% { transform: rotate(3deg); }
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    @keyframes finger-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+
+    @keyframes finger-tap {
+      0%, 100% { transform: translateX(0) scale(1); }
+      50% { transform: translateX(4px) scale(0.94); }
+    }
+
+    @media (max-width: 960px) {
+      .door-zone {
+        left: 50%;
+        width: min(52vw, 390px);
+      }
+
+      .cat-caishen {
+        width: min(52vw, 480px);
+        bottom: 14%;
+      }
+
+      body.phase-enter .cat-caishen,
+      body.phase-give .cat-caishen {
+        transform: translate(-50%, 0) scale(1);
+      }
+    }
+
+    @media (max-width: 760px) {
+      .festival {
+        height: 100vh;
+      }
+
+      .title {
+        top: calc(env(safe-area-inset-top, 0px) + 0.2%);
+      }
+
+      .door-zone {
+        left: 50%;
+        bottom: 12%;
+        width: min(62vw, 320px);
+        height: min(84vw, 440px);
+      }
+
+      .knock-line {
+        bottom: calc(12% + min(84vw, 440px) + 12px);
+      }
+
+      .cat-caishen {
+        width: min(76vw, 405px);
+        bottom: 23%;
+        transform: translate(-50%, 14%) scale(0.52);
+      }
+
+      body.phase-open .cat-caishen {
+        transform: translate(-50%, 12%) scale(0.58);
+      }
+
+      body.phase-enter .cat-caishen,
+      body.phase-give .cat-caishen {
+        transform: translate(-50%, 0) scale(0.94);
+      }
+
+      .cat-caption {
+        font-size: 1rem;
+      }
+
+      .couplet-text {
+        font-size: clamp(0.72rem, 2.2vw, 0.92rem);
+        letter-spacing: 0.14em;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .festival {
+        min-height: 100vh;
+      }
+
+      .title {
+        top: calc(env(safe-area-inset-top, 0px) + 0.1%);
+        font-size: clamp(1.8rem, 9vw, 2.8rem);
+      }
+
+      .door-zone {
+        bottom: 9%;
+        width: min(64vw, 300px);
+        height: min(88vw, 430px);
+      }
+
+      .cat-caishen {
+        width: min(82vw, 360px);
+        bottom: 25%;
+        transform: translate(-50%, 14%) scale(0.49);
+      }
+
+      body.phase-open .cat-caishen {
+        transform: translate(-50%, 12%) scale(0.56);
+      }
+
+      body.phase-enter .cat-caishen,
+      body.phase-give .cat-caishen {
+        transform: translate(-50%, 0) scale(0.9);
+      }
+
+      .controls {
+        left: 50%;
+        right: auto;
+        bottom: 2%;
+        transform: translateX(-50%);
+      }
+
+      .finger-hint {
+        right: auto;
+        left: 50%;
+        top: -36px;
+        transform: translate(-50%, 4px);
+      }
+
+      body.need-music .finger-hint {
+        transform: translate(-50%, 0);
+      }
+
+      .wish {
+        bottom: 14%;
+        font-size: clamp(1.05rem, 5.2vw, 1.35rem);
+      }
+
+      .gate-column {
+        width: 13%;
+      }
+
+      .couplet-text {
+        font-size: 0.72rem;
+        padding: 7px 3px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <main class="scene">
-        <h1 class="title">初五迎财神</h1>
-        <div class="ground"></div>
-        <section class="house" aria-label="大门">
-            <div class="door-frame">
-                <div class="door-side door-left">
-                    <div class="door-pattern">福</div>
-                    <span class="knocker"></span>
-                </div>
-                <div class="door-side door-right">
-                    <div class="door-pattern">财</div>
-                    <span class="knocker"></span>
-                </div>
-            </div>
-        </section>
-        <p class="knock-text">咚 咚 咚</p>
-        <section class="caishen" aria-label="财神角色">
-            <div class="body">
-                <div class="belly">财</div>
-            </div>
-            <div class="arm left"></div>
-            <div class="arm right"></div>
-            <div class="yuanbao">金元宝</div>
-            <div class="head">
-                <div class="hat"></div>
-                <div class="eye left"></div>
-                <div class="eye right"></div>
-                <div class="moustache"></div>
-            </div>
-        </section>
-        <div class="ingots" aria-hidden="true">
-            <span class="ingot" style="--x:-300px; --y:170px; --r:-18deg; --dur:1400ms; --delay:40ms;"></span>
-            <span class="ingot" style="--x:-200px; --y:210px; --r:-10deg; --dur:1700ms; --delay:120ms;"></span>
-            <span class="ingot" style="--x:-100px; --y:160px; --r:-4deg; --dur:1200ms; --delay:200ms;"></span>
-            <span class="ingot" style="--x:10px; --y:210px; --r:3deg; --dur:1600ms; --delay:280ms;"></span>
-            <span class="ingot" style="--x:120px; --y:170px; --r:8deg; --dur:1350ms; --delay:360ms;"></span>
-            <span class="ingot" style="--x:220px; --y:220px; --r:14deg; --dur:1750ms; --delay:460ms;"></span>
-            <span class="ingot" style="--x:300px; --y:180px; --r:22deg; --dur:1450ms; --delay:560ms;"></span>
+  <main class="festival">
+    <h1 class="title">初五迎财神 · 八方来财</h1>
+
+    <span class="lantern left"></span>
+    <span class="lantern right"></span>
+    <div class="stage-shadow"></div>
+
+    <section class="door-zone" aria-label="大门">
+      <div class="gate-crown">
+        <span class="gate-plaque">财运亨通</span>
+      </div>
+      <span class="gate-column left">
+        <span class="couplet-text">神佑八方利似春</span>
+      </span>
+      <span class="gate-column right">
+        <span class="couplet-text">马奔四海财如水</span>
+      </span>
+      <div class="door-frame">
+        <div class="door left">
+          <div class="label">招财</div>
+          <span class="ring"></span>
         </div>
-        <p class="blessing">财神登门，金银满屋，鸿运当头！</p>
-        <button class="replay" id="replayBtn" type="button">再迎一次</button>
-    </main>
-    <script>
-        // ===== 音效系统 =====
-        let audioCtx = null;
-        
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        <div class="door right">
+          <div class="label">进宝</div>
+          <span class="ring"></span>
+        </div>
+      </div>
+    </section>
+
+    <p class="knock-line">咚咚咚，猫猫财神到</p>
+
+    <figure class="cat-caishen">
+      <div class="cat-stage" id="catStage">
+        <canvas id="catCanvas" aria-label="去背景后的猫财神"></canvas>
+        <img id="catSource" src="assets/cat-caishen.png" alt="两只猫财神图" />
+      </div>
+      <figcaption class="cat-caption">两位财神猫进门送福</figcaption>
+      <span class="gift-tag">金元宝 x N</span>
+    </figure>
+
+    <div class="rain-layer yuanbao-rain" id="yuanbaoRain"></div>
+    <div class="rain-layer hongbao-rain" id="hongbaoRain"></div>
+    <p class="wish">喵财神进门，八方来财，金银满仓！</p>
+
+    <p class="music-hint">已自动播放，iPhone 轻触页面可立即开声</p>
+
+    <div class="controls">
+      <div class="music-wrap">
+        <span class="finger-hint" aria-hidden="true"></span>
+        <button class="btn" id="musicBtn" type="button">关闭音乐</button>
+      </div>
+      <button class="btn" id="replayBtn" type="button">再迎一次</button>
+    </div>
+  </main>
+
+  <audio id="bgm" preload="auto" loop autoplay playsinline webkit-playsinline x5-playsinline>
+    <source src="assets/bafanglaicai.mp3" type="audio/mpeg" />
+  </audio>
+
+  <script>
+    const phases = ["phase-knock", "phase-open", "phase-enter", "phase-give"];
+    const phaseTimes = [0, 1700, 2800, 4300];
+    const timers = [];
+    const body = document.body;
+
+    const replayBtn = document.getElementById("replayBtn");
+    const musicBtn = document.getElementById("musicBtn");
+    const hongbaoRain = document.getElementById("hongbaoRain");
+    const yuanbaoRain = document.getElementById("yuanbaoRain");
+    const catStage = document.getElementById("catStage");
+    const catCanvas = document.getElementById("catCanvas");
+    const catSource = document.getElementById("catSource");
+    const bgm = document.getElementById("bgm");
+    const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent)
+      || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+    let wantsMusic = true;
+    let musicAvailable = true;
+    let audioCtx = null;
+    let rainRunning = false;
+    let hongbaoTimer = null;
+    let yuanbaoTimer = null;
+    let startedMutedAutoplay = false;
+
+    function removeCatBackground() {
+      try {
+        const w = catSource.naturalWidth;
+        const h = catSource.naturalHeight;
+        if (!w || !h) {
+          catStage.classList.add("fallback");
+          return;
+        }
+
+        const workCanvas = document.createElement("canvas");
+        workCanvas.width = w;
+        workCanvas.height = h;
+        const workCtx = workCanvas.getContext("2d", { willReadFrequently: true });
+        workCtx.drawImage(catSource, 0, 0, w, h);
+
+        const imageData = workCtx.getImageData(0, 0, w, h);
+        const data = imageData.data;
+        const total = w * h;
+
+        const visited = new Uint8Array(total);
+        const bg = new Uint8Array(total);
+        const queue = new Int32Array(total);
+        let qHead = 0;
+        let qTail = 0;
+
+        const lum = (i4) => (0.2126 * data[i4]) + (0.7152 * data[i4 + 1]) + (0.0722 * data[i4 + 2]);
+
+        function isBgSeed(i4) {
+          const r = data[i4];
+          const g = data[i4 + 1];
+          const b = data[i4 + 2];
+          const a = data[i4 + 3];
+          if (a < 12) return true;
+
+          const max = Math.max(r, g, b);
+          const min = Math.min(r, g, b);
+          const sat = max === 0 ? 0 : (max - min) / max;
+          const l = lum(i4);
+          const warmDark = r > g && g >= b && (r - b) < 145;
+
+          return l < 72 || (l < 156 && warmDark) || (l < 174 && sat < 0.24);
+        }
+
+        function canSpread(fromIdx, toIdx) {
+          const f = fromIdx * 4;
+          const t = toIdx * 4;
+
+          const dr = data[f] - data[t];
+          const dg = data[f + 1] - data[t + 1];
+          const db = data[f + 2] - data[t + 2];
+          const colorDist = Math.hypot(dr, dg, db);
+          const lf = lum(f);
+          const lt = lum(t);
+
+          return colorDist < 31
+            || (Math.abs(lf - lt) < 18 && colorDist < 50)
+            || (lt < 118 && colorDist < 64)
+            || isBgSeed(t);
+        }
+
+        function seedAt(index) {
+          if (visited[index]) return;
+          visited[index] = 1;
+          const i4 = index * 4;
+          if (isBgSeed(i4)) {
+            bg[index] = 1;
+            queue[qTail++] = index;
+          }
+        }
+
+        for (let x = 0; x < w; x += 1) {
+          seedAt(x);
+          seedAt((h - 1) * w + x);
+        }
+        for (let y = 0; y < h; y += 1) {
+          seedAt(y * w);
+          seedAt(y * w + (w - 1));
+        }
+
+        while (qHead < qTail) {
+          const idx = queue[qHead++];
+          const x = idx % w;
+          const y = (idx / w) | 0;
+          const neighbors = [];
+          if (x > 0) neighbors.push(idx - 1);
+          if (x < w - 1) neighbors.push(idx + 1);
+          if (y > 0) neighbors.push(idx - w);
+          if (y < h - 1) neighbors.push(idx + w);
+
+          for (const next of neighbors) {
+            if (visited[next]) continue;
+            visited[next] = 1;
+            if (canSpread(idx, next)) {
+              bg[next] = 1;
+              queue[qTail++] = next;
             }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
+          }
+        }
+
+        for (let i = 0; i < total; i += 1) {
+          const i4 = i * 4;
+          if (bg[i]) {
+            data[i4 + 3] = 0;
+            continue;
+          }
+
+          const x = i % w;
+          const y = (i / w) | 0;
+          let nearBg = 0;
+          for (let yy = -1; yy <= 1; yy += 1) {
+            const ny = y + yy;
+            if (ny < 0 || ny >= h) continue;
+            for (let xx = -1; xx <= 1; xx += 1) {
+              const nx = x + xx;
+              if (nx < 0 || nx >= w || (xx === 0 && yy === 0)) continue;
+              if (bg[ny * w + nx]) nearBg += 1;
             }
+          }
+
+          if (nearBg > 0) {
+            const soften = Math.max(0.34, 1 - nearBg * 0.09);
+            data[i4 + 3] = Math.round(data[i4 + 3] * soften);
+          }
         }
-        
-        // 敲门声
-        function playKnock() {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.frequency.value = 80;
-            osc.type = 'square';
-            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-            gain.gain.exponentialDecayTo = 0.01;
-            gain.gain.setTargetAtTime(0.01, audioCtx.currentTime, 0.05);
-            osc.start(audioCtx.currentTime);
-            osc.stop(audioCtx.currentTime + 0.15);
+
+        catCanvas.width = w;
+        catCanvas.height = h;
+        const outCtx = catCanvas.getContext("2d");
+        outCtx.putImageData(imageData, 0, 0);
+        catStage.classList.remove("fallback");
+      } catch (_) {
+        catStage.classList.add("fallback");
+      }
+    }
+
+    function clearStory() {
+      phases.forEach((name) => body.classList.remove(name));
+      while (timers.length) {
+        clearTimeout(timers.pop());
+      }
+      stopRains();
+    }
+
+    function stopRains() {
+      rainRunning = false;
+      if (hongbaoTimer) {
+        clearInterval(hongbaoTimer);
+        hongbaoTimer = null;
+      }
+      if (yuanbaoTimer) {
+        clearInterval(yuanbaoTimer);
+        yuanbaoTimer = null;
+      }
+      hongbaoRain.innerHTML = "";
+      yuanbaoRain.innerHTML = "";
+    }
+
+    function spawnHongbaoDrop() {
+      if (!rainRunning) return;
+      const packet = document.createElement("span");
+      const w = 22 + Math.floor(Math.random() * 22);
+      packet.className = "hongbao-drop";
+      packet.style.setProperty("--x", `${4 + Math.random() * 92}%`);
+      packet.style.setProperty("--w", `${w}px`);
+      packet.style.setProperty("--dur", `${4100 + Math.floor(Math.random() * 2400)}ms`);
+      packet.style.setProperty("--drift", `${-85 + Math.floor(Math.random() * 170)}px`);
+      packet.style.setProperty("--r0", `${-50 + Math.floor(Math.random() * 100)}deg`);
+      packet.style.setProperty("--r1", `${-500 + Math.floor(Math.random() * 1000)}deg`);
+      packet.addEventListener("animationend", () => packet.remove(), { once: true });
+      hongbaoRain.appendChild(packet);
+    }
+
+    function spawnYuanbaoDrop() {
+      if (!rainRunning) return;
+      const ingot = document.createElement("span");
+      const w = 24 + Math.floor(Math.random() * 22);
+      ingot.className = "yuanbao-drop";
+      ingot.style.setProperty("--x", `${6 + Math.random() * 88}%`);
+      ingot.style.setProperty("--w", `${w}px`);
+      ingot.style.setProperty("--dur", `${4600 + Math.floor(Math.random() * 2600)}ms`);
+      ingot.style.setProperty("--drift", `${-60 + Math.floor(Math.random() * 120)}px`);
+      ingot.style.setProperty("--r0", `${-26 + Math.floor(Math.random() * 52)}deg`);
+      ingot.style.setProperty("--r1", `${-240 + Math.floor(Math.random() * 480)}deg`);
+      ingot.addEventListener("animationend", () => ingot.remove(), { once: true });
+      yuanbaoRain.appendChild(ingot);
+    }
+
+    function startRains() {
+      if (rainRunning) return;
+      rainRunning = true;
+
+      for (let i = 0; i < 16; i += 1) {
+        setTimeout(() => spawnHongbaoDrop(), i * 70);
+      }
+      for (let i = 0; i < 10; i += 1) {
+        setTimeout(() => spawnYuanbaoDrop(), i * 90);
+      }
+
+      hongbaoTimer = setInterval(() => {
+        const burst = 1 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < burst; i += 1) spawnHongbaoDrop();
+      }, 170);
+
+      yuanbaoTimer = setInterval(() => {
+        const burst = Math.random() < 0.72 ? 1 : 2;
+        for (let i = 0; i < burst; i += 1) spawnYuanbaoDrop();
+      }, 280);
+    }
+
+    async function ensureSfxReady() {
+      const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextCtor) return false;
+      if (!audioCtx) audioCtx = new AudioContextCtor();
+      if (audioCtx.state === "suspended") {
+        try {
+          await audioCtx.resume();
+        } catch (_) {
+          return false;
         }
-        
-        // 开门声（吱呀声）
-        function playDoorOpen() {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.frequency.setValueAtTime(200, audioCtx.currentTime);
-            osc.frequency.linearRampToValueAtTime(400, audioCtx.currentTime + 0.3);
-            osc.type = 'sawtooth';
-            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-            gain.gain.setTargetAtTime(0.01, audioCtx.currentTime + 0.2, 0.1);
-            osc.start(audioCtx.currentTime);
-            osc.stop(audioCtx.currentTime + 0.5);
+      }
+      return audioCtx.state === "running";
+    }
+
+    function playKnockHit(offsetSec) {
+      if (!audioCtx) return;
+      const at = audioCtx.currentTime + offsetSec;
+
+      const tone = audioCtx.createOscillator();
+      tone.type = "triangle";
+      tone.frequency.setValueAtTime(185, at);
+      tone.frequency.exponentialRampToValueAtTime(82, at + 0.16);
+
+      const toneGain = audioCtx.createGain();
+      toneGain.gain.setValueAtTime(0.0001, at);
+      toneGain.gain.exponentialRampToValueAtTime(0.12, at + 0.012);
+      toneGain.gain.exponentialRampToValueAtTime(0.0001, at + 0.18);
+
+      const noiseBuffer = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * 0.09), audioCtx.sampleRate);
+      const channel = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < channel.length; i += 1) {
+        channel[i] = (Math.random() * 2 - 1) * 0.55;
+      }
+
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = noiseBuffer;
+
+      const lowpass = audioCtx.createBiquadFilter();
+      lowpass.type = "lowpass";
+      lowpass.frequency.setValueAtTime(1200, at);
+
+      const noiseGain = audioCtx.createGain();
+      noiseGain.gain.setValueAtTime(0.0001, at);
+      noiseGain.gain.exponentialRampToValueAtTime(0.07, at + 0.01);
+      noiseGain.gain.exponentialRampToValueAtTime(0.0001, at + 0.11);
+
+      const master = audioCtx.createGain();
+      master.gain.value = 0.9;
+      master.connect(audioCtx.destination);
+
+      tone.connect(toneGain).connect(master);
+      noise.connect(lowpass).connect(noiseGain).connect(master);
+
+      tone.start(at);
+      tone.stop(at + 0.2);
+      noise.start(at);
+      noise.stop(at + 0.12);
+    }
+
+    async function playKnockSequence() {
+      const ready = await ensureSfxReady();
+      if (!ready) return;
+      [0, 0.43, 0.86, 1.29].forEach((offset) => playKnockHit(offset));
+    }
+
+    function playStory() {
+      clearStory();
+      phaseTimes.forEach((ms, index) => {
+        const phase = phases[index];
+        timers.push(setTimeout(() => {
+          body.classList.add(phase);
+          if (phase === "phase-knock") playKnockSequence();
+          if (phase === "phase-open") startRains();
+        }, ms));
+      });
+    }
+
+    function updateMusicBtn() {
+      if (!musicAvailable) {
+        musicBtn.disabled = true;
+        musicBtn.textContent = "音乐不可用";
+        body.classList.remove("need-music");
+        return;
+      }
+      if (bgm.paused) {
+        musicBtn.textContent = "开启音乐";
+      } else if (bgm.muted) {
+        musicBtn.textContent = "开启声音";
+      } else {
+        musicBtn.textContent = "关闭音乐";
+      }
+      body.classList.toggle("need-music", bgm.paused || bgm.muted);
+    }
+
+    async function tryPlayMusic() {
+      if (!wantsMusic || !musicAvailable) return;
+      try {
+        bgm.muted = false;
+        bgm.volume = 0.48;
+        await bgm.play();
+        startedMutedAutoplay = false;
+        body.classList.remove("music-gesture");
+      } catch (_) {
+        try {
+          // Fallback for strict autoplay policies: start muted, unmute on first interaction.
+          bgm.muted = true;
+          await bgm.play();
+          startedMutedAutoplay = true;
+          body.classList.add("music-gesture");
+        } catch (_) {
+          startedMutedAutoplay = false;
+          bgm.muted = false;
+          body.classList.add("music-gesture");
         }
-        
-        // 金币声
-        function playCoin() {
-            if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1800, audioCtx.currentTime + 0.1);
-            osc.type = 'sine';
-            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gain.gain.setTargetAtTime(0.01, audioCtx.currentTime + 0.1, 0.05);
-            osc.start(audioCtx.currentTime);
-            osc.stop(audioCtx.currentTime + 0.3);
+      }
+      updateMusicBtn();
+    }
+
+    function scheduleAutoplayRetries() {
+      [180, 680, 1400].forEach((ms) => {
+        setTimeout(() => {
+          if (wantsMusic && bgm.paused) tryPlayMusic();
+        }, ms);
+      });
+    }
+
+    function autoClickEnableMusic() {
+      if (!musicAvailable) return;
+      const needEnable = bgm.paused || bgm.muted
+        || musicBtn.textContent === "开启音乐"
+        || musicBtn.textContent === "开启声音";
+      if (!needEnable) return;
+      wantsMusic = true;
+      musicBtn.click();
+    }
+
+    function scheduleAutoMusicButtonClicks() {
+      [90, 360, 920, 1800].forEach((ms) => {
+        setTimeout(() => {
+          autoClickEnableMusic();
+          if (wantsMusic && bgm.paused) tryPlayMusic();
+        }, ms);
+      });
+    }
+
+    function enableSoundIfMuted() {
+      if (bgm.paused || !bgm.muted) return;
+      bgm.muted = false;
+      startedMutedAutoplay = false;
+      body.classList.remove("music-gesture");
+      updateMusicBtn();
+    }
+
+    function toggleMusic() {
+      if (!musicAvailable) return;
+      if (bgm.paused) {
+        wantsMusic = true;
+        tryPlayMusic();
+        return;
+      }
+
+      if (bgm.muted) {
+        wantsMusic = true;
+        enableSoundIfMuted();
+        return;
+      }
+
+      wantsMusic = false;
+      bgm.pause();
+      bgm.muted = false;
+      startedMutedAutoplay = false;
+      body.classList.remove("music-gesture");
+      updateMusicBtn();
+    }
+
+    bgm.volume = 0.48;
+    bgm.autoplay = true;
+    bgm.playsInline = true;
+    bgm.addEventListener("error", () => {
+      musicAvailable = false;
+      wantsMusic = false;
+      updateMusicBtn();
+    });
+
+    ["pointerdown", "touchstart", "keydown"].forEach((eventName) => {
+      document.addEventListener(eventName, () => {
+        ensureSfxReady();
+        if (startedMutedAutoplay) enableSoundIfMuted();
+        if (wantsMusic && bgm.paused) tryPlayMusic();
+      });
+    });
+
+    if (isIOS) {
+      const forceAudibleFromGesture = async () => {
+        if (!wantsMusic || !musicAvailable) return;
+        await ensureSfxReady();
+        if (bgm.paused || bgm.muted) {
+          bgm.muted = false;
+          try {
+            await bgm.play();
+            startedMutedAutoplay = false;
+            body.classList.remove("music-gesture");
+            updateMusicBtn();
+          } catch (_) {}
         }
-        
-        // 连续金币声
-        function playCoins() {
-            for (let i = 0; i < 7; i++) {
-                setTimeout(() => playCoin(), i * 150 + Math.random() * 100);
-            }
+      };
+
+      ["touchstart", "touchend", "click"].forEach((eventName) => {
+        document.addEventListener(eventName, forceAudibleFromGesture, { capture: true, passive: true });
+      });
+    }
+
+    ["pageshow", "focus"].forEach((eventName) => {
+      window.addEventListener(eventName, () => {
+        if (wantsMusic && bgm.paused) tryPlayMusic();
+      });
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && wantsMusic && bgm.paused) {
+        tryPlayMusic();
+      }
+    });
+
+    replayBtn.addEventListener("click", () => {
+      playStory();
+      if (wantsMusic) {
+        if (bgm.paused) {
+          tryPlayMusic();
+        } else {
+          bgm.currentTime = 0;
+          if (bgm.muted) body.classList.add("music-gesture");
         }
-        
-        // 喜庆音效（和弦）
-        function playFestive() {
-            if (!audioCtx) return;
-            const notes = [523, 659, 784]; // C5, E5, G5 和弦
-            notes.forEach((freq, i) => {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.frequency.value = freq;
-                osc.type = 'sine';
-                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                gain.gain.setTargetAtTime(0.01, audioCtx.currentTime + 0.5, 0.3);
-                osc.start(audioCtx.currentTime);
-                osc.stop(audioCtx.currentTime + 1.5);
-            });
-        }
-        
-        // 财神祝福音
-        function playBlessing() {
-            if (!audioCtx) return;
-            // 播放一个上行的琶音
-            const notes = [392, 523, 659, 784]; // G4, C5, E5, G5
-            notes.forEach((freq, i) => {
-                setTimeout(() => {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    osc.frequency.value = freq;
-                    osc.type = 'triangle';
-                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                    gain.gain.setTargetAtTime(0.01, audioCtx.currentTime + 0.3, 0.15);
-                    osc.start(audioCtx.currentTime);
-                    osc.stop(audioCtx.currentTime + 0.5);
-                }, i * 120);
-            });
-        }
-        
-        // ===== 动画控制 =====
-        const phases = ["phase-knock", "phase-open", "phase-enter", "phase-give"];
-        const timeline = [0, 2200, 3000, 5000];
-        let timers = [];
-        
-        function clearPhases() {
-            phases.forEach((name) => document.body.classList.remove(name));
-        }
-        
-        function playStory() {
-            initAudio();
-            timers.forEach((id) => clearTimeout(id));
-            timers = [];
-            clearPhases();
-            
-            timeline.forEach((time, index) => {
-                const phaseName = phases[index];
-                timers.push(
-                    setTimeout(() => {
-                        document.body.classList.add(phaseName);
-                        
-                        // 播放对应音效
-                        if (phaseName === 'phase-knock') {
-                            // 敲门声 5 次
-                            for (let i = 0; i < 5; i++) {
-                                setTimeout(playKnock, i * 450);
-                            }
-                        } else if (phaseName === 'phase-open') {
-                            playDoorOpen();
-                        } else if (phaseName === 'phase-give') {
-                            playCoins();
-                            playFestive();
-                            setTimeout(playBlessing, 500);
-                        }
-                    }, time)
-                );
-            });
-        }
-        
-        document.getElementById("replayBtn").addEventListener("click", playStory);
-        
-        // 首次点击任意位置初始化音频并播放
-        let firstClick = true;
-        document.addEventListener('click', () => {
-            if (firstClick) {
-                firstClick = false;
-                playStory();
-            }
-        }, { once: true });
-    </script>
+      }
+    });
+
+    musicBtn.addEventListener("click", toggleMusic);
+
+    catSource.addEventListener("load", removeCatBackground);
+    catSource.addEventListener("error", () => catStage.classList.add("fallback"));
+    if (catSource.complete) removeCatBackground();
+
+    updateMusicBtn();
+    playStory();
+    tryPlayMusic();
+    scheduleAutoplayRetries();
+    scheduleAutoMusicButtonClicks();
+  </script>
 </body>
 </html>
