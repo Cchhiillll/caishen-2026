@@ -1705,13 +1705,13 @@
       }
     });
 
-    function replayRound() {
+    function replayRound(resetMusicPosition = true) {
       playStory();
       if (wantsMusic) {
         if (bgm.paused) {
           tryPlayMusic();
         } else {
-          bgm.currentTime = 0;
+          if (resetMusicPosition) bgm.currentTime = 0;
           if (bgm.muted) body.classList.add("music-gesture");
         }
       }
@@ -1723,7 +1723,7 @@
     genShareCardBtn.addEventListener("click", downloadShareCard);
     closeShareModalBtn.addEventListener("click", () => {
       setShareModalOpen(false);
-      replayRound();
+      replayRound(false);
     });
 
     ["contextmenu", "dragstart"].forEach((eventName) => {
