@@ -430,7 +430,7 @@
     }
 
     .yuanbao-rain {
-      z-index: 1;
+      z-index: 44;
     }
 
     .hongbao-drop {
@@ -576,6 +576,37 @@
       gap: 10px;
       align-items: center;
       z-index: 50;
+    }
+
+    .music-icon-btn {
+      position: absolute;
+      right: min(4vw, 22px);
+      top: calc(env(safe-area-inset-top, 0px) + min(1.8vw, 12px));
+      width: 46px;
+      height: 46px;
+      border: 2px solid #ffd778;
+      border-radius: 50%;
+      background: #4a1020e6;
+      color: #ffedb6;
+      font-size: 1.35rem;
+      line-height: 1;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      z-index: 50;
+      box-shadow: 0 8px 14px #00000044;
+      transition: 200ms ease;
+      touch-action: manipulation;
+    }
+
+    .music-icon-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      background: #6b1830;
+    }
+
+    .music-icon-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
     }
 
     .btn {
@@ -761,6 +792,13 @@
         padding: 7px 10px;
       }
 
+      .music-icon-btn {
+        top: calc(env(safe-area-inset-top, 0px) + 8px);
+        width: 42px;
+        height: 42px;
+        font-size: 1.2rem;
+      }
+
       .wish {
         bottom: calc(env(safe-area-inset-bottom, 0px) + 30px);
         font-size: clamp(1rem, 3.8vw, 1.22rem);
@@ -819,6 +857,13 @@
         transform: translateX(-50%);
         font-size: 0.8rem;
         padding: 7px 10px;
+      }
+
+      .music-icon-btn {
+        top: calc(env(safe-area-inset-top, 0px) + 8px);
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
       }
 
       .wish {
@@ -880,11 +925,11 @@
     <div class="rain-layer hongbao-rain" id="hongbaoRain"></div>
     <p class="wish">喵财神进门，八方来财，金银满仓！</p>
     <p class="score-board" id="scoreBoard">红包 0 · 元宝 0 · 财运值 0</p>
+    <button class="music-icon-btn" id="musicBtn" type="button" aria-label="关闭音乐" title="关闭音乐">🔊</button>
 
     <p class="music-hint">已自动播放，iPhone 轻触页面可立即开声</p>
 
     <div class="controls">
-      <button class="btn" id="musicBtn" type="button">关闭音乐</button>
       <button class="btn" id="replayBtn" type="button">再迎一次</button>
     </div>
   </main>
@@ -1117,15 +1162,24 @@
     function updateMusicBtn() {
       if (!musicAvailable) {
         musicBtn.disabled = true;
-        musicBtn.textContent = "音乐不可用";
+        musicBtn.textContent = "🚫";
+        musicBtn.setAttribute("aria-label", "音乐不可用");
+        musicBtn.setAttribute("title", "音乐不可用");
         return;
       }
+      musicBtn.disabled = false;
       if (bgm.paused) {
-        musicBtn.textContent = "开启音乐";
+        musicBtn.textContent = "🔇";
+        musicBtn.setAttribute("aria-label", "开启音乐");
+        musicBtn.setAttribute("title", "开启音乐");
       } else if (bgm.muted) {
-        musicBtn.textContent = "开启声音";
+        musicBtn.textContent = "🔈";
+        musicBtn.setAttribute("aria-label", "开启声音");
+        musicBtn.setAttribute("title", "开启声音");
       } else {
-        musicBtn.textContent = "关闭音乐";
+        musicBtn.textContent = "🔊";
+        musicBtn.setAttribute("aria-label", "关闭音乐");
+        musicBtn.setAttribute("title", "关闭音乐");
       }
     }
 
@@ -1163,9 +1217,7 @@
 
     function autoClickEnableMusic() {
       if (!musicAvailable) return;
-      const needEnable = bgm.paused || bgm.muted
-        || musicBtn.textContent === "开启音乐"
-        || musicBtn.textContent === "开启声音";
+      const needEnable = bgm.paused || bgm.muted;
       if (!needEnable) return;
       wantsMusic = true;
       musicBtn.click();
